@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drying Out — An Interactive Atlas of Drought Across the Americas</title>
+  <meta name="description" content="Two decades of MODIS satellite data reveal where the Americas are losing green." />
+  <link rel="stylesheet" href="css/main.css" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+  <nav class="atlas-nav">
+    <span class="atlas-nav__brand">Drying Out · DSC 106</span>
+    <div class="atlas-nav__chapters">
+      <a href="#ch1">01 Years</a>
+      <a href="#ch2">02 Map</a>
+      <a href="#ch3">03 Shift</a>
+      <a href="#ch4">04 Regions</a>
+      <a href="#ch5">05 Spread</a>
+      <a href="#ch6">06 Latitude</a>
+    </div>
+  </nav>
+
+  <!-- ============== HERO ============== -->
+  <header class="hero">
+    <div class="hero__kicker">An interactive atlas · 2001–2023</div>
+    <h1 class="hero__title">Drying<br/>Out<em>.</em></h1>
+    <p class="hero__lede">
+      Across two decades of NASA satellite observation, vegetation across
+      the Americas has slipped. The forests are thinner. The savannas are
+      sparser. The drought signal is no longer subtle — and it is no longer
+      regional.
+    </p>
+    <div class="hero__byline">
+      <span>Shaun Israni</span><span>Hoang Pham</span><span>Jared Wang</span>
+    </div>
+  </header>
+
+  <!-- ============== HOOK STATS ============== -->
+  <section class="hook-row">
+    <div class="hook-stat">
+      <div class="hook-stat__num">−16.3%</div>
+      <div class="hook-stat__label">Relative loss in mean pixel<br/>tree cover, 2001 → 2022</div>
+    </div>
+    <div class="hook-stat">
+      <div class="hook-stat__num">9.1%</div>
+      <div class="hook-stat__label">Absolute browning in the worst<br/>affected latitude band (~5°N)</div>
+    </div>
+    <div class="hook-stat">
+      <div class="hook-stat__num">23 yrs</div>
+      <div class="hook-stat__label">Of monthly MODIS NDVI imagery<br/>aggregated for this atlas</div>
+    </div>
+  </section>
+
+  <!-- ============== CH 1 — Year comparison ============== -->
+  <article class="chapter" id="ch1">
+    <div class="chapter__num">Chapter 01 · A tale of two years</div>
+    <h2 class="chapter__title">When a single drought rewrites a season.</h2>
+    <p class="chapter__intro">
+      The 2008 drought in the American West was severe enough to depress
+      vegetation health every month of the year compared to 2005, a
+      relatively normal year three years prior. Pick any two years to
+      see how dramatically a single drought can reshape a growing season.
+    </p>
+    <div class="viz" id="viz1"></div>
+  </article>
+
+  <!-- ============== CH 2 — Embedded interactive map (their existing app) ============== -->
+  <article class="chapter" id="ch2">
+    <div class="chapter__num">Chapter 02 · The map, year by year</div>
+    <h2 class="chapter__title">Where the brown crept in.</h2>
+    <p class="chapter__intro">
+      Each region of the Americas carries its own drought story. <em>Click
+      a region box</em> to zoom in and play an automated story of notable
+      events. <em>Drag the slider</em> to scrub through months from 2000
+      to 2025. <em>Hover any pixel</em> for the local vegetation proxy,
+      or click <em>Highlight region</em> to define your own area of interest.
+    </p>
+
+    <div class="viz">
+      <!-- ===== begin: existing app (preserved from main.js) ===== -->
+      <div id="app" class="visible">
+        <h1 id="title">NDVI Heatmap Viewer · 2000 – 2025</h1>
+
+        <div id="view-controls">
+          <button id="toggle-compare">Compare Two Different Times</button>
+        </div>
+
+        <div id="viz-container">
+          <canvas id="heatmap" width="1200" height="900"></canvas>
+          <div id="popup"></div>
+        </div>
+
+        <div id="single-map-summary">
+          <div id="single-map-left">
+            <div id="hover">Hover vegetation proxy: —</div>
+            <ul id="main-region-list" class="region-summary-list"></ul>
+          </div>
+          <div id="single-map-right">
+            <div id="highlight-controls">
+              <button id="toggle-select">⬚ Highlight region</button>
+              <div id="ndvi-avg"><span id="ndvi-avg-value"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <section id="compare-section">
+          <h2>Compare Two Different Times</h2>
+          <p>
+            The left map follows the main timeline slider below. Select a
+            comparison month for the right map to compare two different times.
+          </p>
+          <div class="compare-controls">
+            <label for="compare-right-select">
+              Comparison time
+              <select id="compare-right-select"></select>
+            </label>
+          </div>
+          <div class="compare-grid">
+            <div class="compare-panel">
+              <h3 id="compare-left-title">Slider time</h3>
+              <canvas id="compare-left" width="560" height="540"></canvas>
+              <div id="compare-left-hover" class="compare-hover">Hover vegetation proxy: —</div>
+              <ul id="compare-left-regions" class="compare-region-list"></ul>
+            </div>
+            <div class="compare-panel">
+              <h3 id="compare-right-title">Later time</h3>
+              <canvas id="compare-right" width="560" height="540"></canvas>
+              <div id="compare-right-hover" class="compare-hover">Hover vegetation proxy: —</div>
+              <ul id="compare-right-regions" class="compare-region-list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <input type="range" id="slider" min="0" max="0" value="0" />
+      </div>
+      <!-- ===== end: existing app ===== -->
+    </div>
+  </article>
+
+  <!-- ============== CH 3 — Distribution shift ============== -->
+  <article class="chapter" id="ch3">
+    <div class="chapter__num">Chapter 03 · The pixels are quieter</div>
+    <h2 class="chapter__title">The whole distribution is sliding left.</h2>
+    <p class="chapter__intro">
+      It isn't only the worst-hit pixels that have changed. The entire
+      population of tree-cover values has shifted toward lower density.
+      Toggle the years — the gap between 2001 and 2022 is not a tail event.
+      It is the median pixel growing browner.
+    </p>
+    <div class="viz" id="viz3"></div>
+  </article>
+
+  <!-- ============== CH 4 — Region heatmap ============== -->
+  <article class="chapter" id="ch4">
+    <div class="chapter__num">Chapter 04 · Every region, every year</div>
+    <h2 class="chapter__title">Read left → right. Watch the green drain out.</h2>
+    <p class="chapter__intro">
+      The matrix tells you what an average obscures: browning is pervasive
+      but uneven. Sort by total loss to see which regions surrendered the
+      most cover over twenty-three years. <em>Click a row</em> to highlight
+      that region in the chart below.
+    </p>
+    <div class="viz" id="viz4"></div>
+  </article>
+
+  <!-- ============== CH 5 — Deviation spread ============== -->
+  <article class="chapter" id="ch5">
+    <div class="chapter__num">Chapter 05 · How wide is the spread?</div>
+    <h2 class="chapter__title">Some places drift. Others swing.</h2>
+    <p class="chapter__intro">
+      Regional deviation from the long-term baseline isn't only a question
+      of <em>direction</em> — it's a question of <em>volatility</em>. The
+      Midwest's distribution is wide and high, while the Andes are narrow
+      and steady. Adjust the year range to see how the shape changes.
+    </p>
+    <div class="viz" id="viz5"></div>
+  </article>
+
+  <!-- ============== CH 6 — Latitude profile ============== -->
+  <article class="chapter" id="ch6">
+    <div class="chapter__num">Chapter 06 · A signal by latitude</div>
+    <h2 class="chapter__title">The subtropics took the hardest hit.</h2>
+    <p class="chapter__intro">
+      Plotting twenty-year change against latitude pulls a pattern out of
+      the noise: the bands between roughly 30°S and 30°N have lost the
+      most green. Brush a latitude band to isolate it.
+    </p>
+    <div class="viz" id="viz6"></div>
+  </article>
+
+  <!-- ============== METHODS FOOTER ============== -->
+  <footer class="methods" id="methods">
+    <h3>Sources &amp; methods</h3>
+    <p>
+      Vegetation data: NASA MODIS Terra Monthly NDVI Level 3, via the NASA
+      GIBS WMS endpoint (<code>gibs.earthdata.nasa.gov</code>), layer
+      <code>MODIS_Terra_L3_NDVI_Monthly</code>. Spatial extent: longitude
+      −170° to −30°, latitude −60° to +75°. Temporal extent: monthly
+      composites from January 2000 through April 2025.
+    </p>
+    <p>
+      Pre-processing: raw imagery was cached, cropped, and converted to
+      numeric arrays. Annual means were computed pixel-wise, then summarized
+      into the six analysis regions used in this atlas. Tree-cover
+      percentages are derived from MODIS VCF Collection 6 (MOD44B).
+    </p>
+    <p>
+      Built with D3.js v7. Final project for DSC 106 · Data Visualization ·
+      UC San Diego · Spring 2026. Source on
+      <a href="#">GitHub</a>.
+    </p>
+  </footer>
+
+  <!-- ============== SCRIPTS ============== -->
+  <!-- 1) Existing map app (preserved verbatim) -->
+  <script type="module" src="./main.js?v=2"></script>
+
+  <!-- 2) The 5 new visualizations -->
+  <script type="module">
+    import { loadJSON } from './js/shared.js';
+    import { render as renderV1 } from './js/viz1-comparison.js';
+    import { render as renderV3 } from './js/viz3-distribution.js';
+    import { render as renderV4 } from './js/viz4-heatmap.js';
+    import { render as renderV5 } from './js/viz5-deviation.js';
+    import { render as renderV6 } from './js/viz6-latitude.js';
+
+    const [d1, d3data, d4, d5, d6] = await Promise.all([
+      loadJSON('data/monthly-by-year.json'),
+      loadJSON('data/pixel-distributions.json'),
+      loadJSON('data/region-year-treecover.json'),
+      loadJSON('data/region-deviations.json'),
+      loadJSON('data/latitude-change.json'),
+    ]);
+
+    renderV1(document.getElementById('viz1'), d1);
+    renderV3(document.getElementById('viz3'), d3data);
+    renderV4(document.getElementById('viz4'), d4);
+    renderV5(document.getElementById('viz5'), d5);
+    renderV6(document.getElementById('viz6'), d6);
+  </script>
+
+</body>
+</html>

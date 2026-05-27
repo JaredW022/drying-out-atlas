@@ -1,0 +1,64 @@
+/* =========================================================
+   DRYING OUT — Design Tokens (LIGHT editorial atlas)
+   Cream parchment background. Harmonizes with the existing
+   #4a7a2a green and yellow-popup palette from main.js.
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Source+Sans+3:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ---- type ---- */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body:    'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* ---- surfaces ---- */
+  --bg-page:   #faf7f0;   /* parchment / cream */
+  --bg-card:   #ffffff;   /* viz panels */
+  --bg-elev:   #f4ede0;   /* hover / hook row */
+  --bg-warm:   #f9f1de;   /* subtle warm tint */
+
+  /* ---- ink ---- */
+  --ink:       #1f1a14;   /* primary text — deep umber */
+  --ink-dim:   #4a4239;
+  --ink-mute:  #8a7e6e;   /* captions, labels */
+  --rule:      #e6dccb;   /* hairline dividers */
+  --rule-soft: #f0e9d8;
+
+  /* ---- accents (matched to existing app palette) ---- */
+  --green-7:   #4a7a2a;   /* their existing green */
+  --green-9:   #2d4a1a;
+  --green-5:   #92b16d;
+  --green-bg:  #e8f1df;   /* their existing chip bg */
+
+  --rust-9:    #7a3a16;
+  --rust-7:    #a8501f;   /* drought accent */
+  --rust-5:    #c89671;
+  --rust-bg:   #f5e3d4;
+
+  --ochre-7:   #b8923c;
+  --tan:       #d4b878;   /* divergent midpoint (visible on cream) */
+
+  --signal:    #c66832;   /* hover/active highlight */
+  --signal-bg: #fdebd9;
+
+  --popup-yellow: #fef9c3;  /* their existing popup */
+  --popup-border: #e9d84a;
+
+  /* ---- spacing ---- */
+  --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
+  --sp-5: 24px;  --sp-6: 32px;  --sp-7: 48px;  --sp-8: 72px;  --sp-9: 120px;
+
+  /* ---- type scale ---- */
+  --t-hero: clamp(3rem, 9vw, 7rem);
+  --t-h1:   clamp(2rem, 4.5vw, 3.2rem);
+  --t-h2:   clamp(1.3rem, 2.5vw, 1.8rem);
+  --t-body: 1.0625rem;
+  --t-sm:   0.875rem;
+  --t-xs:   0.75rem;
+
+  /* ---- layout ---- */
+  --content-max: 720px;
+  --viz-max:     1100px;
+  --radius:      4px;
+}

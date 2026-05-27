@@ -1,0 +1,702 @@
+{
+  "regions": [
+    "Amazon",
+    "Western US",
+    "Midwest",
+    "Central America",
+    "Andes",
+    "Canada/Arctic"
+  ],
+  "points": [
+    {
+      "region": "Amazon",
+      "year": 2001,
+      "deviation": 0.0422
+    },
+    {
+      "region": "Amazon",
+      "year": 2002,
+      "deviation": 0.0184
+    },
+    {
+      "region": "Amazon",
+      "year": 2003,
+      "deviation": 0.0378
+    },
+    {
+      "region": "Amazon",
+      "year": 2004,
+      "deviation": 0.0133
+    },
+    {
+      "region": "Amazon",
+      "year": 2005,
+      "deviation": 0.0396
+    },
+    {
+      "region": "Amazon",
+      "year": 2006,
+      "deviation": 0.0421
+    },
+    {
+      "region": "Amazon",
+      "year": 2007,
+      "deviation": 0.0159
+    },
+    {
+      "region": "Amazon",
+      "year": 2008,
+      "deviation": 0.0382
+    },
+    {
+      "region": "Amazon",
+      "year": 2009,
+      "deviation": 0.021
+    },
+    {
+      "region": "Amazon",
+      "year": 2010,
+      "deviation": 0.0251
+    },
+    {
+      "region": "Amazon",
+      "year": 2011,
+      "deviation": 0.0246
+    },
+    {
+      "region": "Amazon",
+      "year": 2012,
+      "deviation": 0.0493
+    },
+    {
+      "region": "Amazon",
+      "year": 2013,
+      "deviation": 0.0366
+    },
+    {
+      "region": "Amazon",
+      "year": 2014,
+      "deviation": 0.0243
+    },
+    {
+      "region": "Amazon",
+      "year": 2015,
+      "deviation": 0.0465
+    },
+    {
+      "region": "Amazon",
+      "year": 2016,
+      "deviation": 0.0405
+    },
+    {
+      "region": "Amazon",
+      "year": 2017,
+      "deviation": 0.0223
+    },
+    {
+      "region": "Amazon",
+      "year": 2018,
+      "deviation": 0.013
+    },
+    {
+      "region": "Amazon",
+      "year": 2019,
+      "deviation": 0.0163
+    },
+    {
+      "region": "Amazon",
+      "year": 2020,
+      "deviation": 0.0463
+    },
+    {
+      "region": "Amazon",
+      "year": 2021,
+      "deviation": 0.02
+    },
+    {
+      "region": "Amazon",
+      "year": 2022,
+      "deviation": 0.027
+    },
+    {
+      "region": "Amazon",
+      "year": 2023,
+      "deviation": 0.0307
+    },
+    {
+      "region": "Western US",
+      "year": 2001,
+      "deviation": 0.0581
+    },
+    {
+      "region": "Western US",
+      "year": 2002,
+      "deviation": 0.0578
+    },
+    {
+      "region": "Western US",
+      "year": 2003,
+      "deviation": 0.0364
+    },
+    {
+      "region": "Western US",
+      "year": 2004,
+      "deviation": 0.051
+    },
+    {
+      "region": "Western US",
+      "year": 2005,
+      "deviation": 0.0372
+    },
+    {
+      "region": "Western US",
+      "year": 2006,
+      "deviation": 0.0242
+    },
+    {
+      "region": "Western US",
+      "year": 2007,
+      "deviation": 0.0541
+    },
+    {
+      "region": "Western US",
+      "year": 2008,
+      "deviation": 0.0469
+    },
+    {
+      "region": "Western US",
+      "year": 2009,
+      "deviation": 0.0654
+    },
+    {
+      "region": "Western US",
+      "year": 2010,
+      "deviation": 0.0427
+    },
+    {
+      "region": "Western US",
+      "year": 2011,
+      "deviation": 0.0416
+    },
+    {
+      "region": "Western US",
+      "year": 2012,
+      "deviation": 0.049
+    },
+    {
+      "region": "Western US",
+      "year": 2013,
+      "deviation": 0.0483
+    },
+    {
+      "region": "Western US",
+      "year": 2014,
+      "deviation": 0.051
+    },
+    {
+      "region": "Western US",
+      "year": 2015,
+      "deviation": 0.0459
+    },
+    {
+      "region": "Western US",
+      "year": 2016,
+      "deviation": 0.053
+    },
+    {
+      "region": "Western US",
+      "year": 2017,
+      "deviation": 0.0394
+    },
+    {
+      "region": "Western US",
+      "year": 2018,
+      "deviation": 0.0411
+    },
+    {
+      "region": "Western US",
+      "year": 2019,
+      "deviation": 0.0581
+    },
+    {
+      "region": "Western US",
+      "year": 2020,
+      "deviation": 0.0515
+    },
+    {
+      "region": "Western US",
+      "year": 2021,
+      "deviation": 0.0571
+    },
+    {
+      "region": "Western US",
+      "year": 2022,
+      "deviation": 0.0451
+    },
+    {
+      "region": "Western US",
+      "year": 2023,
+      "deviation": 0.0534
+    },
+    {
+      "region": "Midwest",
+      "year": 2001,
+      "deviation": 0.214
+    },
+    {
+      "region": "Midwest",
+      "year": 2002,
+      "deviation": 0.2447
+    },
+    {
+      "region": "Midwest",
+      "year": 2003,
+      "deviation": 0.2078
+    },
+    {
+      "region": "Midwest",
+      "year": 2004,
+      "deviation": 0.2078
+    },
+    {
+      "region": "Midwest",
+      "year": 2005,
+      "deviation": 0.2159
+    },
+    {
+      "region": "Midwest",
+      "year": 2006,
+      "deviation": 0.2385
+    },
+    {
+      "region": "Midwest",
+      "year": 2007,
+      "deviation": 0.2248
+    },
+    {
+      "region": "Midwest",
+      "year": 2008,
+      "deviation": 0.2216
+    },
+    {
+      "region": "Midwest",
+      "year": 2009,
+      "deviation": 0.201
+    },
+    {
+      "region": "Midwest",
+      "year": 2010,
+      "deviation": 0.2041
+    },
+    {
+      "region": "Midwest",
+      "year": 2011,
+      "deviation": 0.2403
+    },
+    {
+      "region": "Midwest",
+      "year": 2012,
+      "deviation": 0.2132
+    },
+    {
+      "region": "Midwest",
+      "year": 2013,
+      "deviation": 0.1955
+    },
+    {
+      "region": "Midwest",
+      "year": 2014,
+      "deviation": 0.2295
+    },
+    {
+      "region": "Midwest",
+      "year": 2015,
+      "deviation": 0.2082
+    },
+    {
+      "region": "Midwest",
+      "year": 2016,
+      "deviation": 0.2796
+    },
+    {
+      "region": "Midwest",
+      "year": 2017,
+      "deviation": 0.1815
+    },
+    {
+      "region": "Midwest",
+      "year": 2018,
+      "deviation": 0.2284
+    },
+    {
+      "region": "Midwest",
+      "year": 2019,
+      "deviation": 0.2582
+    },
+    {
+      "region": "Midwest",
+      "year": 2020,
+      "deviation": 0.2437
+    },
+    {
+      "region": "Midwest",
+      "year": 2021,
+      "deviation": 0.2245
+    },
+    {
+      "region": "Midwest",
+      "year": 2022,
+      "deviation": 0.2053
+    },
+    {
+      "region": "Midwest",
+      "year": 2023,
+      "deviation": 0.2388
+    },
+    {
+      "region": "Central America",
+      "year": 2001,
+      "deviation": 0.088
+    },
+    {
+      "region": "Central America",
+      "year": 2002,
+      "deviation": 0.0953
+    },
+    {
+      "region": "Central America",
+      "year": 2003,
+      "deviation": 0.0685
+    },
+    {
+      "region": "Central America",
+      "year": 2004,
+      "deviation": 0.0802
+    },
+    {
+      "region": "Central America",
+      "year": 2005,
+      "deviation": 0.0827
+    },
+    {
+      "region": "Central America",
+      "year": 2006,
+      "deviation": 0.0727
+    },
+    {
+      "region": "Central America",
+      "year": 2007,
+      "deviation": 0.0718
+    },
+    {
+      "region": "Central America",
+      "year": 2008,
+      "deviation": 0.0875
+    },
+    {
+      "region": "Central America",
+      "year": 2009,
+      "deviation": 0.0625
+    },
+    {
+      "region": "Central America",
+      "year": 2010,
+      "deviation": 0.0816
+    },
+    {
+      "region": "Central America",
+      "year": 2011,
+      "deviation": 0.0902
+    },
+    {
+      "region": "Central America",
+      "year": 2012,
+      "deviation": 0.0988
+    },
+    {
+      "region": "Central America",
+      "year": 2013,
+      "deviation": 0.0893
+    },
+    {
+      "region": "Central America",
+      "year": 2014,
+      "deviation": 0.1128
+    },
+    {
+      "region": "Central America",
+      "year": 2015,
+      "deviation": 0.0808
+    },
+    {
+      "region": "Central America",
+      "year": 2016,
+      "deviation": 0.0833
+    },
+    {
+      "region": "Central America",
+      "year": 2017,
+      "deviation": 0.0657
+    },
+    {
+      "region": "Central America",
+      "year": 2018,
+      "deviation": 0.0912
+    },
+    {
+      "region": "Central America",
+      "year": 2019,
+      "deviation": 0.068
+    },
+    {
+      "region": "Central America",
+      "year": 2020,
+      "deviation": 0.081
+    },
+    {
+      "region": "Central America",
+      "year": 2021,
+      "deviation": 0.0788
+    },
+    {
+      "region": "Central America",
+      "year": 2022,
+      "deviation": 0.0839
+    },
+    {
+      "region": "Central America",
+      "year": 2023,
+      "deviation": 0.0662
+    },
+    {
+      "region": "Andes",
+      "year": 2001,
+      "deviation": 0.0193
+    },
+    {
+      "region": "Andes",
+      "year": 2002,
+      "deviation": 0.0151
+    },
+    {
+      "region": "Andes",
+      "year": 2003,
+      "deviation": 0.0275
+    },
+    {
+      "region": "Andes",
+      "year": 2004,
+      "deviation": 0.026
+    },
+    {
+      "region": "Andes",
+      "year": 2005,
+      "deviation": 0.0173
+    },
+    {
+      "region": "Andes",
+      "year": 2006,
+      "deviation": 0.0142
+    },
+    {
+      "region": "Andes",
+      "year": 2007,
+      "deviation": 0.0155
+    },
+    {
+      "region": "Andes",
+      "year": 2008,
+      "deviation": 0.0204
+    },
+    {
+      "region": "Andes",
+      "year": 2009,
+      "deviation": 0.0333
+    },
+    {
+      "region": "Andes",
+      "year": 2010,
+      "deviation": 0.0175
+    },
+    {
+      "region": "Andes",
+      "year": 2011,
+      "deviation": 0.0326
+    },
+    {
+      "region": "Andes",
+      "year": 2012,
+      "deviation": 0.0236
+    },
+    {
+      "region": "Andes",
+      "year": 2013,
+      "deviation": 0.014
+    },
+    {
+      "region": "Andes",
+      "year": 2014,
+      "deviation": 0.0236
+    },
+    {
+      "region": "Andes",
+      "year": 2015,
+      "deviation": 0.0295
+    },
+    {
+      "region": "Andes",
+      "year": 2016,
+      "deviation": 0.0242
+    },
+    {
+      "region": "Andes",
+      "year": 2017,
+      "deviation": 0.0158
+    },
+    {
+      "region": "Andes",
+      "year": 2018,
+      "deviation": 0.0152
+    },
+    {
+      "region": "Andes",
+      "year": 2019,
+      "deviation": 0.0265
+    },
+    {
+      "region": "Andes",
+      "year": 2020,
+      "deviation": 0.0282
+    },
+    {
+      "region": "Andes",
+      "year": 2021,
+      "deviation": 0.0252
+    },
+    {
+      "region": "Andes",
+      "year": 2022,
+      "deviation": 0.0253
+    },
+    {
+      "region": "Andes",
+      "year": 2023,
+      "deviation": 0.0123
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2001,
+      "deviation": 0.1773
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2002,
+      "deviation": 0.1489
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2003,
+      "deviation": 0.1534
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2004,
+      "deviation": 0.1612
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2005,
+      "deviation": 0.1317
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2006,
+      "deviation": 0.1493
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2007,
+      "deviation": 0.1545
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2008,
+      "deviation": 0.1269
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2009,
+      "deviation": 0.16
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2010,
+      "deviation": 0.1424
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2011,
+      "deviation": 0.1578
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2012,
+      "deviation": 0.1431
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2013,
+      "deviation": 0.1268
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2014,
+      "deviation": 0.1883
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2015,
+      "deviation": 0.1505
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2016,
+      "deviation": 0.1831
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2017,
+      "deviation": 0.1411
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2018,
+      "deviation": 0.137
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2019,
+      "deviation": 0.1823
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2020,
+      "deviation": 0.1342
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2021,
+      "deviation": 0.1505
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2022,
+      "deviation": 0.1425
+    },
+    {
+      "region": "Canada/Arctic",
+      "year": 2023,
+      "deviation": 0.1717
+    }
+  ]
+}
