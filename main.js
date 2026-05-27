@@ -680,7 +680,7 @@ async function preloadAll() {
   await Promise.all(
     months.map(async (ym) => {
       try {
-        gridCache[ym] = await d3.json(`/ndvi_json/${ym}.json`);
+        gridCache[ym] = await d3.json(`ndvi_json/${ym}.json`);
       } catch {
         gridCache[ym] = null;
       }
