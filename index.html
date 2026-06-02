@@ -11,7 +11,6 @@
     rel="stylesheet" />
 
   <style>
-    /* ─── Reset & Base ─── */
     *,
     *::before,
     *::after {
@@ -33,8 +32,8 @@
       --serif: 'Playfair Display', Georgia, serif;
       --sans: 'DM Sans', system-ui, sans-serif;
       --mono: 'DM Mono', monospace;
-      --page-pad: clamp(3rem, 6vw, 6rem);
-      /* responsive outer padding */
+      --page-pad: clamp(2rem, 4vw, 5rem);
+      --nav-h: 52px;
     }
 
     html {
@@ -50,7 +49,7 @@
       overflow-x: hidden;
     }
 
-    /* ─── Progress bar ─── */
+    /* ── Progress bar ── */
     #progress-bar {
       position: fixed;
       top: 0;
@@ -62,7 +61,7 @@
       transition: width .1s linear;
     }
 
-    /* ─── Nav ─── */
+    /* ── Nav ── */
     .nav {
       position: sticky;
       top: 0;
@@ -73,7 +72,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 var(--page-pad);
-      height: 52px;
+      height: var(--nav-h);
     }
 
     .nav__brand {
@@ -124,39 +123,34 @@
       color: var(--accent);
     }
 
-    /* ─── Hero ─── */
+    /* ── Hero ── */
     .hero {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-      min-height: auto;
-      border-bottom: 1px solid var(--rule);
-    }
-
-    .hero__left {
-      padding: 7rem var(--page-pad) 5rem var(--page-pad);
+      width: 100%;
+      padding: 6rem var(--page-pad);
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-      border-right: 1px solid var(--rule);
+      align-items: center;
+      text-align: center;
+      background: var(--paper);
+      border-bottom: 1px solid var(--rule);
     }
 
     .hero__kicker {
       font-family: var(--mono);
-      font-size: .75rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
+      font-size: .9rem;
       color: var(--ink-faint);
-      margin-bottom: 1.5rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
     }
 
     .hero__title {
       font-family: var(--serif);
-      font-size: clamp(3rem, 6.5vw, 6.5rem);
-      line-height: 1.0;
-      font-weight: 400;
-      color: var(--ink);
-      margin-bottom: 2rem;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      line-height: 1.15;
+      font-weight: 600;
+      max-width: 22ch;
+      margin-bottom: 1.75rem;
     }
 
     .hero__title em {
@@ -167,206 +161,151 @@
     .hero__lede {
       font-size: 1.15rem;
       color: var(--ink-light);
-      max-width: 44ch;
       line-height: 1.8;
-      margin-bottom: 3rem;
+      max-width: 75ch;
+      margin: 0 auto 2.75rem;
     }
 
     .hero__byline {
       font-family: var(--mono);
-      font-size: .72rem;
-      letter-spacing: .08em;
+      font-size: .9rem;
       color: var(--ink-faint);
-      text-transform: uppercase;
       display: flex;
-      gap: 1.5rem;
+      gap: 1.25rem;
+      justify-content: center;
     }
 
-    .hero__right {
+    /* ── Scrollytelling layout ─────────────────────────────────────────
+       Each .scroll-section contains:
+         .scroll-graphic  — sticky panel (left, ~55% width) with the viz
+         .scroll-steps    — scrollable steps (right, ~45% width)
+    ──────────────────────────────────────────────────────────────────── */
+    .scroll-section {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    /* The sticky graphic panel */
+    .scroll-graphic {
+      position: sticky;
+      top: var(--nav-h);
+      height: calc(100vh - var(--nav-h));
+      align-self: start;
+      overflow: hidden;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Graphic label bar at top */
+    .scroll-graphic__label {
+      padding: .6rem 1.2rem;
+      background: var(--paper-2);
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: .7rem;
+      color: var(--ink-faint);
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .scroll-graphic__inner {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* The scrollable steps column */
+    .scroll-steps {
+      padding: 0;
+    }
+
+    /* Individual step cards */
+    .step {
+      min-height: 60vh;
+      padding: 5rem 3rem 5rem 3.5rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 5rem var(--page-pad);
-      gap: 3rem;
-    }
-
-    .hero-stat {
-      padding-bottom: 2.5rem;
       border-bottom: 1px solid var(--rule);
+      opacity: .35;
+      transform: translateX(16px);
+      transition: opacity .5s ease, transform .5s ease;
     }
 
-    .hero-stat:last-child {
+    .step:last-child {
       border-bottom: none;
-      padding-bottom: 0;
     }
 
-    .hero-stat__num {
-      font-family: var(--serif);
-      font-size: 3rem;
-      line-height: 1;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: .5rem;
-    }
-
-    .hero-stat__num.green {
-      color: var(--accent);
-    }
-
-    .hero-stat__num.red {
-      color: var(--accent-2);
-    }
-
-    .hero-stat__label {
-      font-size: .92rem;
-      color: var(--ink-faint);
-      line-height: 1.55;
-    }
-
-    /* ─── Scroll chapter wrapper ─── */
-    /*
-      Each chapter is a full-bleed section.
-      The sidebar text panel slides in from the left on scroll.
-      The body (viz area) sits to the right with generous padding.
-    */
-    .chapter {
-      display: grid;
-      grid-template-columns: 520px 1fr;
-      gap: 0;
-      border-bottom: 1px solid var(--rule);
-      overflow: hidden;
-      /* clips the sliding sidebar */
-    }
-
-    /* ── Sidebar: starts off-screen left, slides in ── */
-    .chapter__sidebar {
-      padding: 5rem 4rem 5rem var(--page-pad);
-      border-right: 1px solid var(--rule);
-      /* Scrollytelling entry state */
-      opacity: 0;
-      transform: translateX(-48px);
-      transition: opacity .65s cubic-bezier(.22, 1, .36, 1),
-        transform .65s cubic-bezier(.22, 1, .36, 1);
-      /* Sticky within the chapter so it stays visible while scrolling through body */
-      position: sticky;
-      top: 52px;
-      align-self: start;
-    }
-
-    .chapter.in-view .chapter__sidebar {
+    /* Scrollama adds .is-active */
+    .step.is-active {
       opacity: 1;
       transform: translateX(0);
     }
 
-    /* Progress line that grows down the sidebar border as you scroll through */
-    .chapter__sidebar::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -1px;
-      width: 3px;
-      height: 0%;
-      background: var(--accent);
-      transition: height .4s ease;
-    }
-
-    .chapter.in-view .chapter__sidebar::before {
-      height: 100%;
-    }
-
-    .chapter__num {
+    .step__num {
       font-family: var(--mono);
-      font-size: .7rem;
+      font-size: .68rem;
       letter-spacing: .12em;
       text-transform: uppercase;
       color: var(--ink-faint);
+      margin-bottom: 1rem;
+    }
+
+    .step__title {
+      font-family: var(--serif);
+      font-size: 1.65rem;
+      line-height: 1.25;
+      font-weight: 400;
       margin-bottom: 1.2rem;
     }
 
-    .chapter__title {
-      font-size: 2.4rem;
-      line-height: 1.2;
+    .step__title em {
+      color: var(--accent);
+      font-style: italic;
     }
 
-    .chapter__intro {
-      font-size: 1.15rem;
+    .step__body {
+      font-size: 1rem;
+      color: var(--ink-light);
       line-height: 1.85;
-      max-width: 55ch;
+      max-width: 52ch;
     }
 
-
-    .chapter__intro em {
+    .step__body em {
       color: var(--ink);
       font-style: normal;
       font-weight: 500;
     }
 
-    /* ── Body: content slides in from the right ── */
-    .chapter__body {
-      padding: 5rem var(--page-pad) 5rem 5rem;
-      opacity: 0;
-      transform: translateX(32px);
-      transition: opacity .65s cubic-bezier(.22, 1, .36, 1) .12s,
-        transform .65s cubic-bezier(.22, 1, .36, 1) .12s;
-    }
-
-    .chapter.in-view .chapter__body {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    /* ─── Viz placeholder ─── */
-    .viz-placeholder {
-      background: var(--paper-2);
-      border: 1.5px dashed rgba(26, 26, 24, .15);
-      border-radius: 6px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: .75rem;
-      color: var(--ink-faint);
-      font-family: var(--mono);
-      font-size: .82rem;
-      letter-spacing: .06em;
-      padding: 2.5rem;
-      max-height: 60vh;
-    }
-
-    .viz-placeholder__icon {
-      font-size: 2rem;
-      opacity: .35;
-    }
-
-    .viz-placeholder__label {
-      text-transform: uppercase;
-      letter-spacing: .1em;
-    }
-
-    .viz-placeholder__sub {
-      font-size: .68rem;
-      opacity: .65;
-      text-align: center;
-      max-width: 40ch;
-    }
-
-    /* ─── Callout ─── */
-    .callout {
+    /* callout inside step */
+    .step .callout {
       border-left: 3px solid var(--accent);
-      padding: 1rem 1.75rem;
-      margin: 2.5rem 0;
+      padding: .85rem 1.4rem;
+      margin: 1.5rem 0 0;
       font-family: var(--serif);
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       font-style: italic;
       color: var(--ink-light);
-      line-height: 1.7;
+      line-height: 1.65;
     }
 
-    .callout.red {
+    .step .callout.amber {
+      border-color: var(--accent-3);
+    }
+
+    .step .callout.red {
       border-color: var(--accent-2);
     }
 
-    /* ─── Tag pills ─── */
+    /* Tags */
     .tag {
       display: inline-block;
       font-family: var(--mono);
@@ -376,7 +315,7 @@
       padding: .2rem .6rem;
       border-radius: 2px;
       margin-right: .4rem;
-      margin-bottom: .4rem;
+      margin-bottom: 1rem;
     }
 
     .tag--green {
@@ -394,16 +333,76 @@
       color: var(--accent-3);
     }
 
-    /* ─── Pivot panel ─── */
+    /* ── Graphic content areas ── */
+
+    /* Ch1: NDVI static image */
+    #graphic-ch1 {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Ch2: regional trend chart */
+    #graphic-ch2 {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    #graphic-ch2 img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    /* Ch3: Amazon comparison */
+    #graphic-ch3 {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.5rem;
+    }
+
+    #graphic-ch3 img {
+      width: 100%;
+      flex: 1;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    /* Graphic transition: panels stack in the same .scroll-graphic via JS */
+    .graphic-panel {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .5s ease;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .graphic-panel.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Pivot section (full-bleed dark interlude) ── */
     .pivot {
       background: var(--ink);
       color: var(--paper);
-      padding: 8rem var(--page-pad);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6rem;
+      padding: 10rem var(--page-pad);
+      text-align: center;
       border-bottom: 1px solid var(--rule);
-      /* slide-in */
       opacity: 0;
       transform: translateY(24px);
       transition: opacity .7s ease, transform .7s ease;
@@ -416,45 +415,84 @@
 
     .pivot__heading {
       font-family: var(--serif);
-      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
       font-weight: 400;
-      line-height: 1.25;
-    }
-
-    .pivot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 8rem var(--page-pad);
-    }
-
-    .pivot__heading {
-      max-width: 30ch;
+      line-height: 1.3;
+      max-width: 28ch;
       margin: 0 auto;
     }
-
 
     .pivot__heading em {
       color: var(--accent-2);
       font-style: italic;
     }
 
-    .pivot__body {
-      font-size: .92rem;
-      color: rgba(248, 246, 241, .65);
-      line-height: 1.85;
-      align-self: center;
+    .pivot__sub {
+      font-size: .95rem;
+      color: rgba(248, 246, 241, .5);
+      margin-top: 1.5rem;
+      font-family: var(--mono);
+      letter-spacing: .06em;
     }
 
-    .pivot__body strong {
-      color: var(--paper);
-      font-weight: 500;
+    /* ── Chapter 4: full-width interactive ── */
+    .ch4-section {
+      padding: 5rem var(--page-pad) 6rem;
+      background: var(--paper);
     }
 
-    /* ─── Methods footer ─── */
+    .ch4-header {
+      max-width: 72ch;
+      margin: 0 auto 3rem;
+      text-align: center;
+    }
+
+    .ch4-header .chapter__num {
+      font-family: var(--mono);
+      font-size: .7rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: .75rem;
+    }
+
+    .ch4-header h2 {
+      font-family: var(--serif);
+      font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+      font-weight: 400;
+      line-height: 1.25;
+      margin-bottom: 1rem;
+    }
+
+    .ch4-header p {
+      font-size: 1rem;
+      color: var(--ink-light);
+      line-height: 1.8;
+    }
+
+    /* ── Interactive app (Ch4) — identical to original ── */
+    #app-embed {
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      overflow: hidden;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    #view-controls {
+      padding: .6rem 1rem;
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper-2);
+      display: flex;
+      gap: .75rem;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    /* ── Methods footer ── */
     .methods {
-      padding: 6rem var(--page-pad) 6rem;
+      padding: 6rem var(--page-pad);
       border-top: 1px solid var(--rule);
       display: grid;
       grid-template-columns: 220px 1fr;
@@ -494,7 +532,7 @@
       text-decoration: underline;
     }
 
-    /* ─── Chapter step indicator (dot trail) ─── */
+    /* ── Chapter dot trail ── */
     #chapter-dots {
       position: fixed;
       right: 1.5rem;
@@ -526,53 +564,26 @@
       opacity: .7;
     }
 
-    /* ─── Responsive ─── */
-    @media (max-width: 1050px) {
-      .hero {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-
-      .hero__left {
-        padding: 4rem var(--page-pad) 3rem;
-        border-right: none;
-      }
-
-      .hero__right {
-        padding: 2.5rem var(--page-pad);
-        border-top: 1px solid var(--rule);
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 0;
-      }
-
-      .hero-stat {
-        flex: 1;
-        min-width: 150px;
-        padding: 1.5rem 1rem;
-        border-bottom: none;
-        border-right: 1px solid var(--rule);
-      }
-
-      .chapter {
+    /* ── Responsive ── */
+    @media (max-width: 1000px) {
+      .scroll-section {
         grid-template-columns: 1fr;
       }
 
-      .chapter__sidebar {
+      .scroll-graphic {
         position: static;
-        padding: 3.5rem var(--page-pad) 2rem;
+        height: 55vw;
+        min-height: 280px;
+        max-height: 480px;
         border-right: none;
         border-bottom: 1px solid var(--rule);
       }
 
-      .chapter__body {
-        padding: 3rem var(--page-pad);
-      }
-
-      .pivot {
-        grid-template-columns: 1fr;
-        gap: 2.5rem;
-        padding: 5rem var(--page-pad);
+      .step {
+        min-height: auto;
+        padding: 3rem var(--page-pad) 3rem;
+        opacity: 1;
+        transform: none;
       }
 
       .methods {
@@ -589,6 +600,52 @@
         display: none;
       }
     }
+
+    /* popup for story mode */
+    #popup {
+      position: absolute;
+      background: rgba(255, 255, 255, .97);
+      border: 1px solid rgba(0, 0, 0, .12);
+      border-radius: 4px;
+      padding: .65rem .9rem;
+      font-family: var(--sans);
+      font-size: .82rem;
+      line-height: 1.5;
+      color: var(--ink);
+      max-width: 300px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .12);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 20;
+      transition: opacity .3s ease;
+    }
+
+    /* ── Compare / selection UI (same as original) ── */
+    .region-summary-list,
+    .compare-region-list {
+      list-style: none;
+    }
+
+    .region-summary-list li,
+    .compare-region-list li {
+      display: flex;
+      gap: .4rem;
+      align-items: baseline;
+    }
+
+    .region-name {
+      color: var(--ink-light);
+    }
+
+    .region-value {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    #toggle-select.active {
+      background: var(--ink);
+      color: var(--paper);
+    }
   </style>
 </head>
 
@@ -596,506 +653,407 @@
 
   <div id="progress-bar"></div>
 
-  <!-- ═══════════════════ NAV ═══════════════════ -->
+  <!-- ══ NAV ══ -->
   <nav class="nav">
     <span class="nav__brand">Drying Out · DSC 106</span>
     <ul class="nav__links">
-      <li><a href="#ch1" data-chapter="0">Global Trend</a></li>
-      <li><a href="#ch2" data-chapter="1">The Greening</a></li>
-      <li><a href="#ch3" data-chapter="2">Amazon</a></li>
-      <li><a href="#ch4" data-chapter="3">What to Measure</a></li>
+      <li><a href="#section-1" data-chapter="0">Global Trend</a></li>
+      <li><a href="#section-2" data-chapter="1">The Greening</a></li>
+      <li><a href="#section-3" data-chapter="2">Amazon</a></li>
+      <li><a href="#ch4" data-chapter="3">Explore</a></li>
     </ul>
   </nav>
 
-  <!-- ═══════════════════ CHAPTER DOT TRAIL ═══════════════════ -->
+  <!-- ══ CHAPTER DOTS ══ -->
   <nav id="chapter-dots" aria-label="Chapter navigation">
-    <div class="dot active" data-target="ch1" title="Ch 01 · Global Trend"></div>
-    <div class="dot" data-target="ch2" title="Ch 02 · The Greening"></div>
-    <div class="dot" data-target="ch3" title="Ch 03 · Amazon"></div>
-    <div class="dot" data-target="ch4" title="Ch 04 · What to Measure"></div>
+    <div class="dot active" data-target="section-1" title="Ch 01 · Global Trend"></div>
+    <div class="dot" data-target="section-2" title="Ch 02 · The Greening"></div>
+    <div class="dot" data-target="section-3" title="Ch 03 · Amazon"></div>
+    <div class="dot" data-target="ch4" title="Ch 04 · Explore"></div>
   </nav>
 
-  <!-- ═══════════════════ HERO ═══════════════════ -->
-  <header class="hero" id="hero" style="
-  width: 100%;
-  padding: 6rem var(--page-pad);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  background: var(--paper);
-">
-
-    <div class="hero__kicker" style="
-    font-family: var(--mono);
-    font-size: 0.9rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 1.25rem;
-  ">
-      An interactive atlas · 2000–2025 · DSC 106
-    </div>
-
-    <h1 class="hero__title" style="
-    font-size: clamp(2.8rem, 6vw, 5rem);
-    line-height: 1.15;
-    font-weight: 600;
-    max-width: 22ch; /* ← lets the title stretch wider */
-    margin-bottom: 1.75rem;
-  ">
+  <!-- ══ HERO ══ -->
+  <header class="hero" id="hero">
+    <div class="hero__kicker">An interactive atlas · 2000–2025 · DSC 106</div>
+    <h1 class="hero__title">
       Every Region Is Getting <em>Greener</em> — The Difference Is in the Trend.
     </h1>
-
-    <p class="hero__lede" style="
-    font-size: 1.15rem;
-    color: var(--ink-light);
-    line-height: 1.8;
-    max-width: 75ch;
-    margin: 0 auto 2.75rem;
-  ">
+    <p class="hero__lede">
       Satellite data spanning 25 years shows every major region on Earth is getting greener — except the Amazon,
       whose trend is so weak it barely registers. The world is healing. Earth's most vital forest is standing still.
     </p>
-
-    <div class="hero__byline" style="
-    font-family: var(--mono);
-    font-size: 0.9rem;
-    color: var(--ink-faint);
-    display: flex;
-    gap: 1.25rem;
-    justify-content: center;
-  ">
+    <div class="hero__byline">
       <span>Shaun Israni</span>
       <span>Hoang Pham</span>
       <span>Jared Wang</span>
     </div>
-
   </header>
 
-  <!-- ═══════════════════ CH 1 ═══════════════════ -->
-  <article class="chapter" id="ch1">
+  <!-- ══════════════════════════════════════════════════════════════════
+       SCROLL SECTION 1 — Global Trend  (NDVI static image)
+  ══════════════════════════════════════════════════════════════════ -->
+  <section class="scroll-section" id="section-1">
 
-    <div class="chapter__sidebar">
-      <div class="chapter__num">Chapter 01</div>
-
-      <h2 class="chapter__title">
-        Vegetation is changing — and satellites let us see it.
-      </h2>
-
-      <p class="chapter__intro">
-        NASA's MODIS instrument has been measuring the Normalized Difference
-        Vegetation Index (NDVI) since 2000, producing a continuous monthly
-        record of plant life across the entire planet. For the first time,
-        we can watch forests, grasslands, and croplands breathe —
-        season by season, year by year.
-      </p>
-    </div>
-
-    <div class="chapter__body">
-
-      <figure class="ndvi-static" style="
-      margin-top:1.75rem;
-      border-radius:4px;
-      overflow:hidden;
-      background:var(--paper-2);
-      position:relative;
-      width:100%;
-    ">
-
-        <img src="example_ndvi_output.png" alt="MODIS NDVI · Americas · July 2024" style="
-        width:100%;
-        height:auto;
-        display:block;
-      ">
-
-        <figcaption style="
-        position:absolute;
-        bottom:0;
-        left:0;
-        right:0;
-        padding:.55rem .85rem;
-        background:linear-gradient(transparent, rgba(0,0,0,.55));
-        font-family:var(--mono);
-        font-size:.72rem;
-        color:rgba(255,255,255,.85);
-        letter-spacing:.05em;
-      ">
-          MODIS NDVI · Americas · July 2024 · NASA GIBS
-        </figcaption>
-
-      </figure>
-
-      <div class="callout" style="margin-top:2rem;">
-        NDVI measures the ratio of reflected near-infrared to red light —
-        healthy, dense vegetation absorbs red and reflects infrared,
-        yielding values near 1. Bare soil and water hover near 0.
-      </div>
-
-      <p style="
-      font-size:1rem;
-      color:var(--ink-light);
-      margin-top:1.75rem;
-      line-height:1.8;
-    ">
-        This static NDVI snapshot shows the vegetation density across the
-        Americas for a single month. In later chapters, we explore how this
-        signal changes over time — where regions are greening, where they are
-        browning, and why long-term trends matter more than any single moment.
-      </p>
-
-    </div>
-
-  </article>
-
-  <!-- ═══════════════════ CH 2 ═══════════════════ -->
-  <article class="chapter" id="ch2">
-    <div class="chapter__sidebar">
-      <div class="chapter__num">Chapter 02</div>
-      <h2 class="chapter__title">Every region is getting greener. The data is <em>unambiguous.</em></h2>
-      <p class="chapter__intro">
-        Of six regions tracked across the Americas, four show statistically
-        significant greening (p &lt; 0.05): Canada/Arctic, the Andes, Central
-        America, and the Midwest. The Western US and the Amazon both trend
-        upward on paper — but neither clears the significance threshold.
-        <em>The greening story is real, but it is not universal.</em>
-      </p>
-    </div>
-    <div class="chapter__body">
-      <span class="tag tag--green">Gaining regions</span>
-      <span class="tag tag--red">Losing regions</span>
-
-      <!-- Slope bar chart -->
-      <figure id="viz-regional-trends"
-        style="margin:1.5rem 0 0; position:relative; border-radius:3px; overflow:hidden; background:var(--paper-2);">
-        <img src="regional_vegetation_trend_slope.png" alt="Regional NDVI trend"
-          style="width:100%; height:auto; display:block;" />
-        <div class="img-empty"
-          style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem; font-family:var(--mono); font-size:.75rem; color:var(--ink-faint); letter-spacing:.07em; min-height:260px;">
-          <span style="font-size:1.8rem; opacity:.3;">📊</span>
-          <span style="text-transform:uppercase;">Regional NDVI trend · set src</span>
+    <!-- Sticky graphic: NDVI map image -->
+    <div class="scroll-graphic" id="graphic-section-1">
+      <div class="scroll-graphic__label" id="graphic-label-1">MODIS NDVI · Americas · Jul 2024 · NASA GIBS</div>
+      <div class="scroll-graphic__inner">
+        <div class="graphic-panel visible" id="panel-ndvi-map"
+          style="padding:1.75rem; align-items:center; justify-content:center;">
+          <img id="graphic-ch1" src="example_ndvi_output.png" alt="MODIS NDVI heatmap of the Americas, July 2024"
+            style="max-width:100%; max-height:72%; object-fit:contain; display:block; border-radius:4px;" />
         </div>
-      </figure>
+      </div>
+    </div>
 
-      <div class="callout" style="margin-top:2rem;">
-        Four of six regions have statistically significant positive trends
-        (p &lt; 0.05). CO₂ fertilization, longer growing seasons at high latitudes,
-        and land-use change all contribute. The Western US and the Amazon are
-        the exceptions — both stressed ecosystems where the signal is too weak
-        to confirm.
+    <!-- Scrolling steps -->
+    <div class="scroll-steps" data-section="1">
+
+      <div class="step" data-step="1-1" data-section="1">
+        <div class="step__num">Chapter 01 · Step 1</div>
+        <h2 class="step__title">Satellites have been watching the planet breathe since 2000.</h2>
+        <p class="step__body">
+          NASA's MODIS instrument has been measuring the Normalized Difference
+          Vegetation Index (NDVI) every month since March 2000, producing a
+          continuous record of plant life across the entire planet — forests,
+          grasslands, and croplands alike.
+        </p>
       </div>
 
-      <script>
-        document.querySelectorAll('#ch2 figure img').forEach(img => {
-          function hideEmpty() {
-            const e = img.closest('figure').querySelector('.img-empty');
-            if (e) e.style.display = 'none';
-          }
-          if (img.complete && img.naturalWidth) hideEmpty();
-          else img.addEventListener('load', hideEmpty);
-        });
-      </script>
-    </div>
-  </article>
+      <div class="step" data-step="1-2" data-section="1">
+        <div class="step__num">Chapter 01 · Step 2</div>
+        <h2 class="step__title">NDVI is a ratio, not a photo.</h2>
+        <p class="step__body">
+          NDVI measures the ratio of reflected near-infrared to red light.
+          Healthy, dense vegetation absorbs red and reflects infrared —
+          yielding values near 1. Bare soil and water hover near 0.
+          The color scale below maps yellow-greens to sparse cover,
+          deep greens to dense canopy.
+        </p>
+        <div class="callout">
+          This July 2024 snapshot shows the Americas at peak Northern Hemisphere
+          summer — the Midwest and Canada flush with growth, the Amazon a deep
+          perennial green year-round.
+        </div>
+      </div>
 
-  <!-- ═══════════════════ PIVOT ═══════════════════ -->
-  <div class="pivot" id="pivot">
-    <div class="pivot__heading">
-      Every region is greening.<br />
-      And yet...<br />
+      <div class="step" data-step="1-3" data-section="1">
+        <div class="step__num">Chapter 01 · Step 3</div>
+        <h2 class="step__title">A snapshot shows density. The trend shows momentum.</h2>
+        <p class="step__body">
+          High NDVI in a single month tells us vegetation is dense <em>right now</em>.
+          It says nothing about whether that density is growing, stalling, or eroding
+          over years. To understand trajectory, we need to look at the slope
+          of the entire 25-year record.
+        </p>
+      </div>
+
     </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       SCROLL SECTION 2 — Regional Trends (slope bar chart)
+  ══════════════════════════════════════════════════════════════════ -->
+  <section class="scroll-section" id="section-2">
+
+    <div class="scroll-graphic" id="graphic-section-2">
+      <div class="scroll-graphic__label" id="graphic-label-2">Regional NDVI trend slope · 2000–2025</div>
+      <div class="scroll-graphic__inner">
+        <div class="graphic-panel visible" id="panel-regional-trends"
+          style="padding:1.5rem; align-items:center; justify-content:center;">
+          <img src="regional_vegetation_trend_slope.png" alt="Bar chart of NDVI trend slopes by region"
+            style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px;"
+            onerror="this.style.display='none'" />
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-steps" data-section="2">
+
+      <div class="step" data-step="2-1" data-section="2">
+        <div class="step__num">Chapter 02 · Step 1</div>
+        <h2 class="step__title">Every region is getting <em>greener.</em></h2>
+        <p class="step__body">
+          When we fit a linear trend across all 300 months of NDVI data for
+          each region, every single one shows a positive slope. The planet's
+          vegetation — taken as a whole — is increasing. That story is
+          <em>unambiguous.</em>
+        </p>
+        <span class="tag tag--green">All slopes positive</span>
+      </div>
+
+      <div class="step" data-step="2-2" data-section="2">
+        <div class="step__num">Chapter 02 · Step 2</div>
+        <h2 class="step__title">Four regions clear the significance bar. Two don't.</h2>
+        <p class="step__body">
+          Statistical significance (p&nbsp;&lt;&nbsp;0.05) separates confident
+          trends from noise. Canada/Arctic, the Andes, Central America, and
+          the Midwest all clear this threshold. The Western US and the Amazon
+          have positive slopes on paper — but neither is statistically
+          confirmed.
+        </p>
+        <span class="tag tag--green">4 significant</span>
+        <span class="tag tag--amber">2 uncertain</span>
+      </div>
+
+      <div class="step" data-step="2-3" data-section="2">
+        <div class="step__num">Chapter 02 · Step 3</div>
+        <h2 class="step__title">CO₂ fertilization, longer seasons, land-use change.</h2>
+        <p class="step__body">
+          Rising CO₂ boosts photosynthesis in most plants. Higher Arctic
+          temperatures extend growing seasons by weeks per decade. Agricultural
+          intensification in the Midwest turns more bare soil to crop canopy.
+          These forces compound — which is why the greening signal is so
+          consistent across regions.
+        </p>
+        <div class="callout">
+          The Western US and the Amazon are the exceptions — both stressed
+          ecosystems where heat stress, drought, and deforestation push back
+          against the global tide.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PIVOT ══ -->
+  <div class="pivot" id="pivot">
+    <p class="pivot__heading">
+      Every region is greening.<br />
+      And yet the Amazon — <em>Earth's lungs</em> — barely moves.
+    </p>
+    <p class="pivot__sub">Scroll to understand why that matters.</p>
   </div>
 
-  <!-- ═══════════════════ CH 3 (Combined) ═══════════════════ -->
-  <article class="chapter" id="ch3">
+  <!-- ══════════════════════════════════════════════════════════════════
+       SCROLL SECTION 3 — Amazon
+  ══════════════════════════════════════════════════════════════════ -->
+  <section class="scroll-section" id="section-3">
 
-    <div class="chapter__sidebar">
-      <div class="chapter__num">Chapter 03</div>
+    <div class="scroll-graphic" id="graphic-section-3">
+      <div class="scroll-graphic__label" id="graphic-label-3">Amazon basin · vegetation trend</div>
+      <div class="scroll-graphic__inner" style="flex-direction:column;">
 
-      <h2 class="chapter__title">
-        A forest can look healthy. The trend can tell a different story.
-      </h2>
+        <!-- Panel A: rainforest photo -->
+        <div class="graphic-panel visible" id="panel-amazon-photo"
+          style="padding:1.75rem; align-items:center; justify-content:center;">
+          <img src="iStock_482799971_Brazil_Amazon_Rainforest_letterbox.jpg" alt="Amazon rainforest canopy"
+            style="max-width:100%; max-height:72%; object-fit:contain; display:block; border-radius:4px;" />
+        </div>
 
-      <p class="chapter__intro">
-        NDVI snapshots show the Amazon as one of the greenest places on Earth. But
-        snapshots hide momentum. When we look at the rate of change — the slope —
-        the picture shifts. Most regions are steadily greening. The Amazon is not
-        keeping pace.
-      </p>
+        <!-- Panel B: Amazon vs Canada comparison chart -->
+        <div class="graphic-panel" id="panel-amazon-comp"
+          style="padding:1.5rem; align-items:center; justify-content:center;">
+          <img src="amazon_canada_comp.png" alt="NDVI trend comparison: Amazon vs Canada/Arctic"
+            style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px;"
+            onerror="this.style.display='none'" />
+        </div>
+
+      </div>
     </div>
 
-    <div class="chapter__body">
+    <div class="scroll-steps" data-section="3">
 
-      <span class="tag tag--amber">Amazon basin · slow growth</span>
-
-      <!-- rainforest photo -->
-      <div class="viz-static" style="margin-top:1.5rem;">
-        <img src="iStock_482799971_Brazil_Amazon_Rainforest_letterbox.jpg" alt="Amazon rainforest" style="
-        width: 100%;
-        height: min(300px, 45vh);
-        object-fit: cover;
-        border-radius: 6px;
-        display: block;
-      " />
+      <div class="step" data-step="3-1" data-section="3" data-graphic="panel-amazon-photo">
+        <div class="step__num">Chapter 03 · Step 1</div>
+        <h2 class="step__title">A forest can look healthy. The trend can tell a different story.</h2>
+        <p class="step__body">
+          NDVI snapshots show the Amazon as one of the greenest places on Earth —
+          dense, dark canopy year-round. But a snapshot hides momentum.
+          When we look at the rate of change, the picture shifts.
+        </p>
+        <span class="tag tag--amber">Amazon basin · slow growth</span>
       </div>
 
-      <!-- callout -->
-      <div class="callout amber" style="margin-top:2rem;">
-        High vegetation density can mask weak momentum. The slope — not the
-        snapshot — is what reveals long-term resilience.
+      <div class="step" data-step="3-2" data-section="3" data-graphic="panel-amazon-photo">
+        <div class="step__num">Chapter 03 · Step 2</div>
+        <h2 class="step__title">High density can mask weak momentum.</h2>
+        <p class="step__body">
+          The Amazon scores high on NDVI because it has been a forest for
+          millennia — that baseline is baked in. What the satellite can't show
+          in a single frame is whether that canopy is thickening, thinning,
+          or simply holding on.
+        </p>
+        <div class="callout amber">
+          The slope — not the snapshot — is what reveals long-term resilience.
+        </div>
       </div>
 
-
-      <!-- Amazon NDVI time series -->
-      <!-- <div class="viz-static" style="margin-top:1.5rem;">
-        <img src="anazon_trendline.png" alt="Amazon NDVI trend" style="
-      width: 100%;
-      height: auto;
-      object-fit: cover;
-      border-radius: 6px;
-      display: block;
-    " />
-      </div> -->
-
-      <!-- Amazon vs global -->
-      <div class="viz-static" style="margin-top:1.5rem;">
-        <img src="amazon_canada_comp.png" alt="Amazon Comparison trend" style="
-      width: 100%;
-      height: auto;
-      object-fit: cover;
-      border-radius: 6px;
-      display: block;
-    " />
+      <div class="step" data-step="3-3" data-section="3" data-graphic="panel-amazon-comp">
+        <div class="step__num">Chapter 03 · Step 3</div>
+        <h2 class="step__title">Canada's slope is 4.6× steeper than the Amazon's.</h2>
+        <p class="step__body">
+          Indexed to 2000, Canada/Arctic's NDVI has climbed steeply over 25
+          years. The Amazon's line is nearly flat. That divergence — and the
+          fact it widens every year — is the central finding of this dataset.
+        </p>
+        <div class="callout red">
+          The Amazon's trend is so weak it fails to reach statistical
+          significance. For the world's most important carbon sink, "barely
+          growing" is not reassuring.
+        </div>
       </div>
-
-      <!-- Optionl interactive version of the same plot -->
-      <!-- 
-      <div class="viz-static" style="margin-top:1.5rem;">
-        <iframe src="amazon_vs_canada.html"
-          style="width:100%; height:min(350px,50vh); border:none; border-radius:6px;"></iframe>
-      </div> -->
-
-      <p style="font-size:1rem; color:var(--ink-light); margin-top:2rem; line-height:1.8;">
-        Canada/Arctic’s slope is 4.6 times steeper than the Amazon’s — a divergence that grows 
-        wider every year. The Amazon stays flat while Canada surges upward.
-      </p>
 
     </div>
+  </section>
 
-  </article>
+  <!-- ══════════════════════════════════════════════════════════════════
+       CHAPTER 4 — Interactive explorer (full-width, no scrollytelling needed)
+  ══════════════════════════════════════════════════════════════════ -->
+  <section class="ch4-section" id="ch4">
 
-  <!-- ═══════════════════ CH 04 ═══════════════════ -->
-  <article class="chapter" id="ch4" style="
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 4rem var(--page-pad);
-  background: var(--paper);
-">
-
-    <!-- Centered title + description -->
-    <div style="max-width: 70ch; margin-bottom: 2.5rem;">
-      <div class="chapter__num" style="margin-bottom: 0.5rem;">Chapter 05</div>
-
-      <h2 class="chapter__title" style="margin-bottom: 1rem;">
-        Explore the change — interactively.
-      </h2>
-
-      <p class="chapter__intro" style="
-      font-size: 1rem;
-      color: var(--ink-light);
-      line-height: 1.8;
-      margin: 0 auto;
-    ">
-        Scrub through the 25‑year NDVI record, zoom into any region, and compare
+    <div class="ch4-header">
+      <div class="chapter__num">Chapter 04</div>
+      <h2>Explore the change — interactively.</h2>
+      <p>
+        Scrub through the 25-year NDVI record, zoom into any region, and compare
         two months side by side. Hover any pixel to reveal its local vegetation
-        proxy. The Amazon’s stagnation becomes even clearer when you explore it
-        directly.
+        proxy. Click a region box to trigger a guided timeline animation.
+        The Amazon's stagnation becomes even clearer when you explore it directly.
       </p>
     </div>
 
-    <!-- Optional tag -->
-    <span class="tag tag--green" style="margin-bottom: 2rem;">
+    <span class="tag tag--green" style="display:block; text-align:center; margin-bottom:2rem;">
       Interactive · NDVI explorer
     </span>
 
-    <!-- Interactive app centered -->
-    <div id="viz-scale-wrapper" style="
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    max-width: 1200px;
-  ">
-      <section id="interactive-section" style="
-      width: 100%;
-      border: 1px solid var(--rule);
-      border-radius: 6px;
-      background: var(--paper);
-      padding: 2rem;
-      text-align: center;
-    ">
-        <div id="app-embed" style="
-        border: 1px solid var(--rule);
-        border-radius: 6px;
-        overflow: hidden;
-        width: 100%;
-      ">
+    <div id="app-embed">
+      <div id="app">
+        <h1 id="title" style="display:none;">NDVI Heatmap Viewer</h1>
 
-          <!-- BEGIN INTERACTIVE APP -->
-          <div id="app" class="visible">
-            <h1 id="title" style="display:none;">NDVI Heatmap Viewer</h1>
+        <!-- toolbar -->
+        <div id="view-controls">
+          <span id="title-label"
+            style="font-family:var(--mono); font-size:.78rem; color:var(--ink-faint); letter-spacing:.06em;"></span>
+          <div style="display:flex; gap:.6rem; align-items:center;">
+            <button id="toggle-select"
+              style="font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; background:transparent; color:var(--ink-light); border:1px solid var(--rule); padding:.35rem .8rem; cursor:pointer; border-radius:2px;">⬚
+              Highlight region</button>
+            <button id="toggle-compare"
+              style="font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; background:var(--ink); color:var(--paper); border:none; padding:.4rem .9rem; cursor:pointer; border-radius:2px;">Compare
+              Two Times</button>
+          </div>
+        </div>
 
-            <!-- toolbar -->
-            <div id="view-controls"
-              style="padding:.6rem 1rem; border-bottom:1px solid var(--rule); background:var(--paper-2); display:flex; gap:.75rem; align-items:center; justify-content:space-between; flex-wrap:wrap;">
-              <span id="title-label"
-                style="font-family:var(--mono); font-size:.78rem; color:var(--ink-faint); letter-spacing:.06em;"></span>
-              <div style="display:flex; gap:.6rem; align-items:center;">
-                <button id="toggle-select"
-                  style="font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; background:transparent; color:var(--ink-light); border:1px solid var(--rule); padding:.35rem .8rem; cursor:pointer; border-radius:2px;">⬚
-                  Highlight region</button>
-                <button id="toggle-compare"
-                  style="font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; background:var(--ink); color:var(--paper); border:none; padding:.4rem .9rem; cursor:pointer; border-radius:2px;">Compare
-                  Two Times</button>
+        <!-- visualization wrapper -->
+        <div id="viz-wrapper" style="position:relative;">
+
+          <!-- Single-map view -->
+          <div id="single-view">
+            <div id="viz-container" style="position:relative;">
+              <canvas id="heatmap" width="1200" height="900" style="width:100%; display:block;"></canvas>
+              <div id="popup"></div>
+            </div>
+
+            <!-- slider -->
+            <div id="slider-bar"
+              style="padding:.55rem 1rem .45rem; background:var(--paper-2); border-top:1px solid var(--rule); display:flex; align-items:center; gap:.75rem;">
+              <span
+                style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2000</span>
+              <input type="range" id="slider" min="0" max="0" value="0" style="flex:1; accent-color:var(--accent);" />
+              <span
+                style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2025</span>
+              <span id="slider-month"
+                style="font-family:var(--mono); font-size:.72rem; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:2px; padding:.15rem .5rem; min-width:6ch; text-align:center;"></span>
+            </div>
+
+            <!-- hover + region summary -->
+            <div id="single-map-summary"
+              style="padding:.6rem 1rem; background:var(--paper-2); border-top:1px solid var(--rule); display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+              <div id="single-map-left" style="flex:1; min-width:200px;">
+                <div id="hover"
+                  style="font-family:var(--mono); font-size:.74rem; color:var(--ink-faint); margin-bottom:.35rem;">
+                  Hover vegetation proxy: —</div>
+                <ul id="main-region-list" class="region-summary-list"
+                  style="list-style:none; display:flex; flex-wrap:wrap; gap:.35rem .9rem; font-family:var(--mono); font-size:.7rem; color:var(--ink-faint);">
+                </ul>
+              </div>
+              <div id="single-map-right">
+                <div id="ndvi-avg" style="display:none;">
+                  <span id="ndvi-avg-value" style="font-family:var(--mono); font-size:.72rem; color:var(--ink);"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compare overlay -->
+          <section id="compare-section" style="
+            position: absolute;
+            inset: 0;
+            background: var(--paper);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity .3s ease, transform .3s ease;
+            z-index: 10;
+          ">
+            <div
+              style="padding:.65rem 1rem; background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; flex-shrink:0;">
+              <span
+                style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em;">Comparing</span>
+              <label for="compare-right-select"
+                style="font-family:var(--mono); font-size:.72rem; color:var(--ink-light); display:flex; align-items:center; gap:.4rem;">
+                Right map:
+                <select id="compare-right-select"
+                  style="font-family:var(--mono); font-size:.72rem; border:1px solid var(--rule); background:var(--paper); padding:.2rem .4rem; border-radius:2px;"></select>
+              </label>
+              <span style="font-family:var(--sans); font-size:.78rem; color:var(--ink-faint);">Left map follows the
+                slider.</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; flex:1; min-height:0; overflow:hidden;">
+              <div
+                style="display:flex; flex-direction:column; padding:.75rem; border-right:1px solid var(--rule); min-height:0;">
+                <h3 id="compare-left-title"
+                  style="font-family:var(--mono); font-size:.72rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.5rem; flex-shrink:0;">
+                  Slider time</h3>
+                <canvas id="compare-left" width="560" height="540"
+                  style="width:100%; flex:1; min-height:0; display:block; border-radius:2px; object-fit:contain;"></canvas>
+                <div id="compare-left-hover" class="compare-hover"
+                  style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); margin-top:.4rem; flex-shrink:0;">
+                  Hover vegetation proxy: —</div>
+                <ul id="compare-left-regions" class="compare-region-list"
+                  style="list-style:none; margin-top:.3rem; display:flex; flex-wrap:wrap; gap:.25rem .7rem; font-family:var(--mono); font-size:.67rem; color:var(--ink-faint); flex-shrink:0;">
+                </ul>
+              </div>
+
+              <div style="display:flex; flex-direction:column; padding:.75rem; min-height:0;">
+                <h3 id="compare-right-title"
+                  style="font-family:var(--mono); font-size:.72rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.5rem; flex-shrink:0;">
+                  Later time</h3>
+                <canvas id="compare-right" width="560" height="540"
+                  style="width:100%; flex:1; min-height:0; display:block; border-radius:2px; object-fit:contain;"></canvas>
+                <div id="compare-right-hover" class="compare-hover"
+                  style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); margin-top:.4rem; flex-shrink:0;">
+                  Hover vegetation proxy: —</div>
+                <ul id="compare-right-regions" class="compare-region-list"
+                  style="list-style:none; margin-top:.3rem; display:flex; flex-wrap:wrap; gap:.25rem .7rem; font-family:var(--mono); font-size:.67rem; color:var(--ink-faint); flex-shrink:0;">
+                </ul>
               </div>
             </div>
 
-            <!-- visualization wrapper -->
-            <div id="viz-wrapper" style="position:relative;">
-
-              <!-- ── Single-map view ── -->
-              <div id="single-view">
-                <div id="viz-container" style="position:relative;">
-                  <canvas id="heatmap" width="1200" height="900" style="width:100%; display:block;"></canvas>
-                  <div id="popup"></div>
-                </div>
-
-                <!-- slider -->
-                <div id="slider-bar"
-                  style="padding:.55rem 1rem .45rem; background:var(--paper-2); border-top:1px solid var(--rule); display:flex; align-items:center; gap:.75rem;">
-                  <span
-                    style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2000</span>
-                  <input type="range" id="slider" min="0" max="0" value="0"
-                    style="flex:1; accent-color:var(--accent);" />
-                  <span
-                    style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2025</span>
-                  <span id="slider-month"
-                    style="font-family:var(--mono); font-size:.72rem; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:2px; padding:.15rem .5rem; min-width:6ch; text-align:center;"></span>
-                </div>
-
-                <!-- hover + region summary -->
-                <div id="single-map-summary"
-                  style="padding:.6rem 1rem; background:var(--paper-2); border-top:1px solid var(--rule); display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
-                  <div id="single-map-left" style="flex:1; min-width:200px;">
-                    <div id="hover"
-                      style="font-family:var(--mono); font-size:.74rem; color:var(--ink-faint); margin-bottom:.35rem;">
-                      Hover vegetation proxy: —</div>
-                    <ul id="main-region-list" class="region-summary-list"
-                      style="list-style:none; display:flex; flex-wrap:wrap; gap:.35rem .9rem; font-family:var(--mono); font-size:.7rem; color:var(--ink-faint);">
-                    </ul>
-                  </div>
-                  <div id="single-map-right">
-                    <div id="ndvi-avg" style="display:none;">
-                      <span id="ndvi-avg-value"
-                        style="font-family:var(--mono); font-size:.72rem; color:var(--ink);"></span>
-                    </div>
-                  </div>
-                </div>
-              </div><!-- /#single-view -->
-
-              <!-- ── Compare overlay ── -->
-              <section id="compare-section" style="
-                position: absolute;
-                inset: 0;
-                background: var(--paper);
-                display: flex;
-                flex-direction: column;
-                opacity: 0;
-                transform: translateY(-10px);
-                pointer-events: none;
-                transition: opacity .3s ease, transform .3s ease;
-                z-index: 10;
-              ">
-                <!-- compare toolbar -->
-                <div
-                  style="padding:.65rem 1rem; background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; flex-shrink:0;">
-                  <span
-                    style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em;">Comparing</span>
-                  <label for="compare-right-select"
-                    style="font-family:var(--mono); font-size:.72rem; color:var(--ink-light); display:flex; align-items:center; gap:.4rem;">
-                    Right map:
-                    <select id="compare-right-select"
-                      style="font-family:var(--mono); font-size:.72rem; border:1px solid var(--rule); background:var(--paper); padding:.2rem .4rem; border-radius:2px;"></select>
-                  </label>
-                  <span style="font-family:var(--sans); font-size:.78rem; color:var(--ink-faint);">Left map follows
-                    the
-                    slider.</span>
-                </div>
-
-                <!-- two canvases -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; flex:1; min-height:0; overflow:hidden;">
-                  <div
-                    style="display:flex; flex-direction:column; padding:.75rem; border-right:1px solid var(--rule); min-height:0;">
-                    <h3 id="compare-left-title"
-                      style="font-family:var(--mono); font-size:.72rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.5rem; flex-shrink:0;">
-                      Slider time</h3>
-                    <canvas id="compare-left" width="560" height="540"
-                      style="width:100%; flex:1; min-height:0; display:block; border-radius:2px; object-fit:contain;"></canvas>
-                    <div id="compare-left-hover" class="compare-hover"
-                      style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); margin-top:.4rem; flex-shrink:0;">
-                      Hover vegetation proxy: —</div>
-                    <ul id="compare-left-regions" class="compare-region-list"
-                      style="list-style:none; margin-top:.3rem; display:flex; flex-wrap:wrap; gap:.25rem .7rem; font-family:var(--mono); font-size:.67rem; color:var(--ink-faint); flex-shrink:0;">
-                    </ul>
-                  </div>
-
-                  <div style="display:flex; flex-direction:column; padding:.75rem; min-height:0;">
-                    <h3 id="compare-right-title"
-                      style="font-family:var(--mono); font-size:.72rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.5rem; flex-shrink:0;">
-                      Later time</h3>
-                    <canvas id="compare-right" width="560" height="540"
-                      style="width:100%; flex:1; min-height:0; display:block; border-radius:2px; object-fit:contain;"></canvas>
-                    <div id="compare-right-hover" class="compare-hover"
-                      style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); margin-top:.4rem; flex-shrink:0;">
-                      Hover vegetation proxy: —</div>
-                    <ul id="compare-right-regions" class="compare-region-list"
-                      style="list-style:none; margin-top:.3rem; display:flex; flex-wrap:wrap; gap:.25rem .7rem; font-family:var(--mono); font-size:.67rem; color:var(--ink-faint); flex-shrink:0;">
-                    </ul>
-                  </div>
-                </div>
-
-                <!-- slider -->
-                <div
-                  style="padding:.5rem 1rem .4rem; background:var(--paper-2); border-top:1px solid var(--rule); display:flex; align-items:center; gap:.75rem; flex-shrink:0;">
-                  <span
-                    style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2000</span>
-                  <input type="range" id="slider-mirror" min="0" max="0" value="0"
-                    style="flex:1; accent-color:var(--accent);" />
-                  <span
-                    style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2025</span>
-                  <span id="slider-month-mirror"
-                    style="font-family:var(--mono); font-size:.72rem; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:2px; padding:.15rem .5rem; min-width:6ch; text-align:center;"></span>
-                </div>
-              </section><!-- /#compare-section -->
-
-            </div><!-- /#viz-wrapper -->
-
-          </div>
-          <!-- END INTERACTIVE APP -->
+            <div
+              style="padding:.5rem 1rem .4rem; background:var(--paper-2); border-top:1px solid var(--rule); display:flex; align-items:center; gap:.75rem; flex-shrink:0;">
+              <span
+                style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2000</span>
+              <input type="range" id="slider-mirror" min="0" max="0" value="0"
+                style="flex:1; accent-color:var(--accent);" />
+              <span
+                style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); white-space:nowrap;">2025</span>
+              <span id="slider-month-mirror"
+                style="font-family:var(--mono); font-size:.72rem; color:var(--ink); background:var(--paper); border:1px solid var(--rule); border-radius:2px; padding:.15rem .5rem; min-width:6ch; text-align:center;"></span>
+            </div>
+          </section>
 
         </div>
-
-      </section>
-
-    </div><!-- /#viz-scale-wrapper -->
-
+      </div>
     </div>
 
-  </article>
+  </section>
 
-
-  <!-- ═══════════════════ METHODS ═══════════════════ -->
+  <!-- ══ METHODS ══ -->
   <footer class="methods" id="methods">
     <div class="methods__label">Sources &amp; Methods</div>
     <div class="methods__content">
@@ -1111,19 +1069,18 @@
         Tree-cover percentages derived from MODIS VCF Collection 6 (MOD44B).
       </p>
       <p>
-        Built with D3.js v7. Final project for DSC 106 · Data Visualization ·
+        Built with D3.js v7 and Scrollama v3. Final project for DSC 106 · Data Visualization ·
         UC San Diego · Spring 2026. <a href="#">Source on GitHub</a>.
       </p>
     </div>
   </footer>
 
-  <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
-  <script type="module" src="./main.js?v=2"></script>
+  <!-- ══ SCRIPTS ══ -->
+  <script type="module" src="./main.js?v=3"></script>
 
-  <!-- ── Scrollytelling + nav + progress ── -->
+  <!-- ── Progress bar + pivot observer + dot/nav wiring ── -->
   <script>
     (function () {
-      /* ── Progress bar ───────────────────────────────────────── */
       const bar = document.getElementById('progress-bar');
       function updateProgress() {
         const scrollTop = window.scrollY;
@@ -1131,72 +1088,58 @@
         bar.style.width = (docH > 0 ? (scrollTop / docH) * 100 : 0) + '%';
       }
 
-      /* ── Chapter slide-in (IntersectionObserver) ─────────────── */
-      const chapters = document.querySelectorAll('.chapter');
+      /* Pivot slide-in */
       const pivotEl = document.getElementById('pivot');
-      const dots = document.querySelectorAll('.dot');
-      const navLinks = document.querySelectorAll('.nav__links a');
-      const chapterIds = ['ch1', 'ch2', 'ch3', 'ch4'];
-
-      // Threshold: trigger when 15% of section is visible
-      const chapterObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach(e => {
-            if (e.isIntersecting) e.target.classList.add('in-view');
-            // Keep 'in-view' once triggered (one-shot reveal)
-          });
-        },
-        { threshold: 0.10 }
-      );
-
-      chapters.forEach(ch => chapterObserver.observe(ch));
-
-      // Pivot panel
-      const pivotObserver = new IntersectionObserver(
-        entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }),
-        { threshold: 0.15 }
-      );
-      if (pivotEl) pivotObserver.observe(pivotEl);
-
-      /* ── Active chapter tracking (for dots + nav) ────────────── */
-      let activeIdx = -1;
-
-      const trackObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach(e => {
-            const idx = chapterIds.indexOf(e.target.id);
-            if (idx === -1) return;
-            if (e.isIntersecting) {
-              activeIdx = idx;
-              updateActiveIndicators(idx);
-            }
-          });
-        },
-        { rootMargin: '-30% 0px -60% 0px' }  /* fires when chapter is in middle band */
-      );
-
-      chapters.forEach(ch => trackObserver.observe(ch));
-
-      function updateActiveIndicators(idx) {
-        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-        navLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+      if (pivotEl) {
+        new IntersectionObserver(
+          entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }),
+          { threshold: 0.15 }
+        ).observe(pivotEl);
       }
 
-      /* ── Dot click → smooth scroll ───────────────────────────── */
-      dots.forEach(dot => {
+      /* Dot clicks */
+      document.querySelectorAll('.dot').forEach(dot => {
         dot.addEventListener('click', () => {
           const target = document.getElementById(dot.dataset.target);
           if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       });
 
-      /* ── Scroll listener ─────────────────────────────────────── */
+      /* Active dot/nav tracking */
+      const sectionIds = ['section-1', 'section-2', 'section-3', 'ch4'];
+      const dots = document.querySelectorAll('.dot');
+      const navLinks = document.querySelectorAll('.nav__links a');
+
+      new IntersectionObserver(
+        entries => entries.forEach(e => {
+          const idx = sectionIds.indexOf(e.target.id);
+          if (idx === -1 || !e.isIntersecting) return;
+          dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+          navLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+        }),
+        { rootMargin: '-30% 0px -60% 0px' }
+      ).observe(document.getElementById('section-1'));
+
+      ['section-2', 'section-3', 'ch4'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        new IntersectionObserver(
+          entries => entries.forEach(e => {
+            if (!e.isIntersecting) return;
+            const idx = i + 1;
+            dots.forEach((d, j) => d.classList.toggle('active', j === idx));
+            navLinks.forEach((a, j) => a.classList.toggle('active', j === idx));
+          }),
+          { rootMargin: '-30% 0px -60% 0px' }
+        ).observe(el);
+      });
+
       window.addEventListener('scroll', updateProgress, { passive: true });
       updateProgress();
     })();
   </script>
 
-  <!-- ── Slider label + compare overlay patch ── -->
+  <!-- ── Slider label + compare overlay patch (unchanged from original) ── -->
   <script type="module">
     const patchInterval = setInterval(() => {
       const slider = document.getElementById('slider');
@@ -1204,14 +1147,12 @@
       const titleLabel = document.getElementById('title-label');
       const compareSection = document.getElementById('compare-section');
       const singleView = document.getElementById('single-view');
-      const vizWrapper = document.getElementById('viz-wrapper');
       const appEl = document.getElementById('app');
       const mirrorSlider = document.getElementById('slider-mirror');
       const mirrorMonth = document.getElementById('slider-month-mirror');
 
       if (!slider || !monthLabel || !appEl || !mirrorSlider) return;
 
-      /* ── months array (mirrors main.js) ── */
       const months = [];
       for (let y = 2000; y <= 2025; y++) {
         for (let m = 1; m <= 12; m++) {
@@ -1221,7 +1162,6 @@
         }
       }
 
-      /* ── sync slider label ── */
       function syncLabel() {
         const ym = months[slider.value] || '';
         monthLabel.textContent = ym;
@@ -1231,39 +1171,33 @@
       }
       slider.addEventListener('input', syncLabel);
 
-      /* mirror slider drives main slider */
       mirrorSlider.max = slider.max || 0;
       mirrorSlider.addEventListener('input', () => {
         slider.value = mirrorSlider.value;
-        slider.dispatchEvent(new Event('input'));   /* trigger main.js update */
+        slider.dispatchEvent(new Event('input'));
       });
 
-      /* keep mirror max in sync once main.js sets slider.max */
       new MutationObserver(() => {
         mirrorSlider.max = slider.max;
       }).observe(slider, { attributes: true, attributeFilter: ['max'] });
 
-      /* watch #title text updates from main.js */
       const titleEl = document.getElementById('title');
       if (titleEl) {
         new MutationObserver(() => {
           const match = (titleEl.textContent || '').match(/\d{4}-\d{2}/);
           if (match) {
             monthLabel.textContent = match[0];
-            mirrorMonth.textContent = match[0];
+            if (mirrorMonth) mirrorMonth.textContent = match[0];
             if (titleLabel) titleLabel.textContent = `NDVI · ${match[0]}`;
           }
         }).observe(titleEl, { childList: true, characterData: true, subtree: true });
       }
       syncLabel();
 
-      /* ── compare overlay: show/hide via opacity + pointer-events ── */
-      if (compareSection && singleView && vizWrapper) {
+      if (compareSection && singleView) {
         function syncCompare() {
           const isCompare = appEl.classList.contains('compare-mode');
-
           if (isCompare) {
-            /* match overlay height to single-view rendered height */
             const h = singleView.getBoundingClientRect().height;
             compareSection.style.height = h ? h + 'px' : 'auto';
             compareSection.style.opacity = '1';
@@ -1275,38 +1209,17 @@
             compareSection.style.pointerEvents = 'none';
           }
         }
-
         new MutationObserver(syncCompare)
           .observe(appEl, { attributes: true, attributeFilter: ['class'] });
-
-        /* re-measure on resize */
         window.addEventListener('resize', () => {
           if (appEl.classList.contains('compare-mode')) syncCompare();
         }, { passive: true });
-
         syncCompare();
       }
 
       clearInterval(patchInterval);
     }, 200);
   </script>
-
-  <!--
-  ─── PLACEHOLDER WIRING GUIDE ──────────────────────────────────────
-  viz-global-map            → global NDVI heatmap with time slider
-  viz-regional-trends       → diverging bar chart, % NDVI change per region
-  viz-region-small-multiples→ sparkline grid, one per region
-  viz-amazon-trend          → Amazon NDVI line chart 2000–2025, annotated
-  viz-amazon-vs-world       → two-line comparison indexed to 2000
-  viz-distribution-shift    → density curve overlay, early vs. late
-  viz-latitude-change       → latitude profile, brushable band, color-coded
-
-  Import pattern:
-    import { render as renderX } from './js/vizX-name.js';
-    import { loadJSON } from './js/shared.js';
-    const data = await loadJSON('data/yourfile.json');
-    renderX(document.getElementById('viz-id'), data);
-  ─────────────────────────────────────────────────────────────────── -->
 
 </body>
 
