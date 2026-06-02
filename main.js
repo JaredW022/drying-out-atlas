@@ -755,7 +755,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // ── Kick everything off ────────────────────────────────────────────────────
   preloadAll().catch(console.error);
   initScrollamaSteps();
-  initCh4Entry();
+  // initCh4Entry();
 
   // Activate the first step on load (in case page starts at top)
   const firstStep = document.querySelector(".step");
