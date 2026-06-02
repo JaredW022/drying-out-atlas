@@ -98,8 +98,15 @@ window.addEventListener("DOMContentLoaded", () => {
   const offCtx = offscreen.getContext("2d");
 
   // ── Zoom ───────────────────────────────────────────────────────────────────
+  // translateExtent clamps panning: allows ~20% overhang so edge regions
+  // (Canada, Andes) can still be centered, but the map can't pan fully off-screen.
+  const PAN_MARGIN = 0.20;
   const zoom = d3.zoom()
     .scaleExtent([1, 20])
+    .translateExtent([
+      [-CANVAS_WIDTH  * PAN_MARGIN, -CANVAS_HEIGHT * PAN_MARGIN],
+      [ CANVAS_WIDTH  * (1 + PAN_MARGIN), CANVAS_HEIGHT * (1 + PAN_MARGIN)],
+    ])
     .filter(event => {
       if (selectionMode) return false;
       return (!event.ctrlKey || event.type === "wheel") && !event.button;
