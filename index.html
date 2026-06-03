@@ -988,8 +988,25 @@
             transition: opacity .3s ease, transform .3s ease;
             z-index: 10;
           ">
+            <button id="compare-region-exit" aria-label="Exit region comparison" style="
+              position:absolute;
+              top:.65rem;
+              right:.75rem;
+              z-index:3;
+              width:30px;
+              height:30px;
+              border:1px solid #b3261e;
+              background:#c0392b;
+              color:white;
+              border-radius:3px;
+              font-family:var(--mono);
+              font-size:1rem;
+              line-height:1;
+              cursor:pointer;
+              display:none;
+            ">×</button>
             <div
-              style="padding:.65rem 1rem; background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; flex-shrink:0;">
+              style="padding:.65rem 3.25rem .65rem 1rem; background:var(--paper-2); border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:1rem; flex-wrap:wrap; flex-shrink:0;">
               <span
                 style="font-family:var(--mono); font-size:.7rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em;">Comparing</span>
               <label for="compare-right-select"
@@ -1075,7 +1092,8 @@
   </footer>
 
   <!-- ══ SCRIPTS ══ -->
-  <script type="module" src="./main.js?v=3"></script>
+  <script type="module" src="./main.js?v=4"></script>
+  <script type="module" src="./js/homepage-interactives.js?v=1"></script>
 
   <!-- ── Progress bar + pivot observer + dot/nav wiring ── -->
   <script>

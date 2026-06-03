@@ -9,6 +9,7 @@ window.addEventListener("DOMContentLoaded", () => {
   let activeZoomTransition = null;
   let hoveredRegionName = null;
   let compareMode = false;
+  let compareFocusedRegion = null;
 
   let lastMouseX = null;
   let lastMouseY = null;
@@ -56,6 +57,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const compareRightCtx = compareRightCanvas.getContext("2d");
 
   const compareRightSelect = d3.select("#compare-right-select");
+  const compareRegionExit = d3.select("#compare-region-exit");
   const compareLeftHover = d3.select("#compare-left-hover");
   const compareRightHover = d3.select("#compare-right-hover");
   const mainRegionList = d3.select("#main-region-list");
@@ -140,7 +142,35 @@ window.addEventListener("DOMContentLoaded", () => {
     offCtx.drawImage(offscreen, 0, 0, cols, rows, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   }
 
-  function drawGridToCanvas(grid, targetCanvas, targetCtx) {
+  function cropForRegion(regionName, padding = 0.12) {
+    if (!regionName || !REGIONS[regionName]) {
+      return { sx: 0, sy: 0, sw: CANVAS_WIDTH, sh: CANVAS_HEIGHT };
+    }
+
+    const r = REGIONS[regionName];
+    const x1 = lonToX(r.lon_min), x2 = lonToX(r.lon_max);
+    const y1 = latToY(r.lat_max), y2 = latToY(r.lat_min);
+    const padX = (x2 - x1) * padding;
+    const padY = (y2 - y1) * padding;
+    const sx = Math.max(0, x1 - padX);
+    const sy = Math.max(0, y1 - padY);
+    const ex = Math.min(CANVAS_WIDTH, x2 + padX);
+    const ey = Math.min(CANVAS_HEIGHT, y2 + padY);
+    return { sx, sy, sw: ex - sx, sh: ey - sy };
+  }
+
+  function compareCanvasPointToData(event, targetCanvas) {
+    const rect = targetCanvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) * targetCanvas.width / rect.width;
+    const y = (event.clientY - rect.top) * targetCanvas.height / rect.height;
+    const crop = cropForRegion(compareFocusedRegion);
+    return {
+      dataX: crop.sx + x / targetCanvas.width * crop.sw,
+      dataY: crop.sy + y / targetCanvas.height * crop.sh,
+    };
+  }
+
+  function drawGridToCanvas(grid, targetCanvas, targetCtx, focusedRegionName = null) {
     targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
 
     if (!grid) {
@@ -181,24 +211,35 @@ window.addEventListener("DOMContentLoaded", () => {
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = cols; tempCanvas.height = rows;
     tempCanvas.getContext("2d").putImageData(imageData, 0, 0);
-    targetCtx.drawImage(tempCanvas, 0, 0, cols, rows, 0, 0, targetCanvas.width, targetCanvas.height);
-    drawRegionsOnCompareCanvas(targetCtx, targetCanvas);
+    const crop = cropForRegion(focusedRegionName);
+    const sx = crop.sx * cols / CANVAS_WIDTH;
+    const sy = crop.sy * rows / CANVAS_HEIGHT;
+    const sw = crop.sw * cols / CANVAS_WIDTH;
+    const sh = crop.sh * rows / CANVAS_HEIGHT;
+    targetCtx.drawImage(tempCanvas, sx, sy, sw, sh, 0, 0, targetCanvas.width, targetCanvas.height);
+    drawRegionsOnCompareCanvas(targetCtx, targetCanvas, focusedRegionName);
   }
 
-  function drawRegionsOnCompareCanvas(targetCtx, targetCanvas) {
-    const scaleX = targetCanvas.width / CANVAS_WIDTH;
-    const scaleY = targetCanvas.height / CANVAS_HEIGHT;
+  function drawRegionsOnCompareCanvas(targetCtx, targetCanvas, focusedRegionName = null) {
+    const crop = cropForRegion(focusedRegionName);
+    const scaleX = targetCanvas.width / crop.sw;
+    const scaleY = targetCanvas.height / crop.sh;
 
     targetCtx.save();
-    targetCtx.lineWidth = 1.5;
-    targetCtx.strokeStyle = "rgba(255,255,255,0.9)";
-    targetCtx.fillStyle = "rgba(255,255,255,0.95)";
+    targetCtx.lineWidth = focusedRegionName ? 2.5 : 1.5;
     targetCtx.font = "12px Arial";
 
     for (const [name, r] of Object.entries(REGIONS)) {
-      const x1 = lonToX(r.lon_min) * scaleX, x2 = lonToX(r.lon_max) * scaleX;
-      const y1 = latToY(r.lat_max) * scaleY, y2 = latToY(r.lat_min) * scaleY;
+      if (focusedRegionName && name !== focusedRegionName) continue;
+      const x1 = (lonToX(r.lon_min) - crop.sx) * scaleX;
+      const x2 = (lonToX(r.lon_max) - crop.sx) * scaleX;
+      const y1 = (latToY(r.lat_max) - crop.sy) * scaleY;
+      const y2 = (latToY(r.lat_min) - crop.sy) * scaleY;
+      targetCtx.strokeStyle = name === focusedRegionName ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.9)";
+      targetCtx.fillStyle = name === focusedRegionName ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.95)";
+      if (name === focusedRegionName) targetCtx.fillRect(x1, y1, x2 - x1, y2 - y1);
       targetCtx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+      targetCtx.fillStyle = "rgba(255,255,255,0.95)";
       targetCtx.fillText(name, x1 + 4, y1 + 14);
     }
     targetCtx.restore();
@@ -206,14 +247,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function compareCanvasToGrid(event, targetCanvas, grid) {
     if (!grid) return null;
-    const rect = targetCanvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) * targetCanvas.width / rect.width;
-    const y = (event.clientY - rect.top) * targetCanvas.height / rect.height;
     const rows = grid.length, cols = grid[0].length;
-    const col = Math.floor(x * cols / targetCanvas.width);
-    const row = Math.floor(y * rows / targetCanvas.height);
+    const point = compareCanvasPointToData(event, targetCanvas);
+    const col = Math.floor(point.dataX * cols / CANVAS_WIDTH);
+    const row = Math.floor(point.dataY * rows / CANVAS_HEIGHT);
     if (col < 0 || col >= cols || row < 0 || row >= rows) return null;
-    return { row, col, value: grid[row][col], dataX: x / targetCanvas.width * CANVAS_WIDTH, dataY: y / targetCanvas.height * CANVAS_HEIGHT };
+    return { row, col, value: grid[row][col], dataX: point.dataX, dataY: point.dataY };
   }
 
   function meanForRegion(grid, regionBox) {
@@ -232,10 +271,15 @@ window.addEventListener("DOMContentLoaded", () => {
     return count ? sum / count : null;
   }
 
-  function updateRegionList(grid, listSelection) {
+  function updateRegionList(grid, listSelection, interactive = false) {
     const rows = Object.entries(REGIONS).map(([name, box]) => ({ name, value: meanForRegion(grid, box) }));
     listSelection.selectAll("li").data(rows).join("li")
-      .html(d => `<span class="region-name">${d.name}</span><span class="region-value">${d.value === null ? "—" : d.value.toFixed(3)}</span>`);
+      .style("cursor", interactive ? "pointer" : null)
+      .style("text-decoration", d => interactive && d.name === compareFocusedRegion ? "underline" : null)
+      .html(d => `<span class="region-name">${d.name}</span><span class="region-value">${d.value === null ? "—" : d.value.toFixed(3)}</span>`)
+      .on("click", (event, d) => {
+        if (interactive) focusCompareRegion(d.name);
+      });
   }
 
   function updateCompareHover(event, side) {
@@ -263,14 +307,28 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!cacheReady) return;
     const leftMonth = months[slider.node().value];
     const rightMonth = compareRightSelect.property("value");
-    d3.select("#compare-left-title").text(leftMonth);
-    d3.select("#compare-right-title").text(rightMonth);
-    drawGridToCanvas(gridCache[leftMonth], compareLeftCanvas, compareLeftCtx);
-    drawGridToCanvas(gridCache[rightMonth], compareRightCanvas, compareRightCtx);
-    updateRegionList(gridCache[leftMonth], compareLeftRegions);
-    updateRegionList(gridCache[rightMonth], compareRightRegions);
-    compareLeftHover.text("Hover vegetation proxy: —");
-    compareRightHover.text("Hover vegetation proxy: —");
+    const suffix = compareFocusedRegion ? ` · ${compareFocusedRegion}` : "";
+    d3.select("#compare-left-title").text(leftMonth + suffix);
+    d3.select("#compare-right-title").text(rightMonth + suffix);
+    drawGridToCanvas(gridCache[leftMonth], compareLeftCanvas, compareLeftCtx, compareFocusedRegion);
+    drawGridToCanvas(gridCache[rightMonth], compareRightCanvas, compareRightCtx, compareFocusedRegion);
+    updateRegionList(gridCache[leftMonth], compareLeftRegions, true);
+    updateRegionList(gridCache[rightMonth], compareRightRegions, true);
+    compareRegionExit.style("display", compareFocusedRegion ? "block" : "none");
+    const hint = compareFocusedRegion ? `${compareFocusedRegion} focus · click × to exit` : "Click a region box to zoom both maps";
+    compareLeftHover.text(hint);
+    compareRightHover.text(hint);
+  }
+
+  function focusCompareRegion(regionName) {
+    if (!regionName || !REGIONS[regionName]) return;
+    compareFocusedRegion = regionName;
+    updateCompareView();
+  }
+
+  function clearCompareRegionFocus() {
+    compareFocusedRegion = null;
+    updateCompareView();
   }
 
   function setCompareMode(enabled) {
@@ -290,6 +348,8 @@ window.addEventListener("DOMContentLoaded", () => {
       sliderLocked = false;
       updateCompareView();
     } else {
+      compareFocusedRegion = null;
+      compareRegionExit.style("display", "none");
       redraw();
       updateHoverFromMouse();
     }
@@ -639,11 +699,22 @@ window.addEventListener("DOMContentLoaded", () => {
   slider.on("input", () => { if (!sliderLocked) update(); });
   toggleCompare.on("click", () => setCompareMode(!compareMode));
   compareRightSelect.on("change", updateCompareView);
+  compareRegionExit.on("click", clearCompareRegionFocus);
 
   compareLeftCanvas.addEventListener("mousemove",  e => updateCompareHover(e, "left"));
   compareRightCanvas.addEventListener("mousemove", e => updateCompareHover(e, "right"));
-  compareLeftCanvas.addEventListener("mouseleave",  () => compareLeftHover.text("Hover vegetation proxy: —"));
-  compareRightCanvas.addEventListener("mouseleave", () => compareRightHover.text("Hover vegetation proxy: —"));
+  compareLeftCanvas.addEventListener("click", e => {
+    const point = compareCanvasPointToData(e, compareLeftCanvas);
+    const hit = regionAt(point.dataX, point.dataY);
+    if (hit) focusCompareRegion(hit.name);
+  });
+  compareRightCanvas.addEventListener("click", e => {
+    const point = compareCanvasPointToData(e, compareRightCanvas);
+    const hit = regionAt(point.dataX, point.dataY);
+    if (hit) focusCompareRegion(hit.name);
+  });
+  compareLeftCanvas.addEventListener("mouseleave",  () => compareLeftHover.text(compareFocusedRegion ? `${compareFocusedRegion} focus · click × to exit` : "Click a region box to zoom both maps"));
+  compareRightCanvas.addEventListener("mouseleave", () => compareRightHover.text(compareFocusedRegion ? `${compareFocusedRegion} focus · click × to exit` : "Click a region box to zoom both maps"));
 
   // ══════════════════════════════════════════════════════════════════════════
   //  SCROLLAMA — wires each .step to the NDVI map in Ch4's viz
