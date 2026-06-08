@@ -26,8 +26,23 @@ window.addEventListener("DOMContentLoaded", () => {
   const gridCache = {};
   let cacheReady = false;
 
-  // Track which Scrollama step is active so we can restore state on re-entry
   let activeScrollStep = null;
+
+  // PERF: cached canvas bounding rect — only recalculated on resize
+  let canvasRect = null;
+  function getCanvasRect() {
+    if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
+    return canvasRect;
+  }
+  window.addEventListener("resize", () => { canvasRect = null; }, { passive: true });
+
+  // PERF: RAF guard for mousemove-triggered redraws
+  let rafPending = false;
+  function scheduleRedraw() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => { rafPending = false; redraw(); });
+  }
 
   // ── Months ─────────────────────────────────────────────────────────────────
   const months = [];
@@ -79,13 +94,21 @@ window.addEventListener("DOMContentLoaded", () => {
     "Canada/Arctic":  { lon_min: -140, lon_max: -60, lat_min: 55, lat_max: 75  },
   };
 
+  // PERF: pre-compute region entries array and pixel coords once
+  const REGION_ENTRIES = Object.entries(REGIONS);
+  const REGION_PIXEL_COORDS = REGION_ENTRIES.map(([name, r]) => ({
+    name,
+    x1: lonToX(r.lon_min), x2: lonToX(r.lon_max),
+    y1: latToY(r.lat_max), y2: latToY(r.lat_min),
+  }));
+
   // ── Coordinate helpers ─────────────────────────────────────────────────────
   function lonToX(lon) { return (lon - LON_MIN) / (LON_MAX - LON_MIN) * CANVAS_WIDTH; }
   function latToY(lat) { return (LAT_MAX - lat) / (LAT_MAX - LAT_MIN) * CANVAS_HEIGHT; }
 
   function cssToCanvas(cssX, cssY) {
-    const rect = canvas.getBoundingClientRect();
-    return [cssX * CANVAS_WIDTH / rect.width, cssY * CANVAS_HEIGHT / rect.height];
+    const r = getCanvasRect();
+    return [cssX * CANVAS_WIDTH / r.width, cssY * CANVAS_HEIGHT / r.height];
   }
 
   function canvasToData(cssX, cssY) {
@@ -99,9 +122,45 @@ window.addEventListener("DOMContentLoaded", () => {
   offscreen.height = CANVAS_HEIGHT;
   const offCtx = offscreen.getContext("2d");
 
+  // PERF: persistent temp canvas for compare drawing — avoids repeated DOM alloc
+  const tempCanvas = document.createElement("canvas");
+  const tempCtx = tempCanvas.getContext("2d");
+
+  // PERF: colour LUT — map 256 NDVI steps to [r,g,b] once; use typed array for speed
+  const LUT_SIZE = 512;
+  const colorLUT = new Uint8Array(LUT_SIZE * 3); // [r0,g0,b0, r1,g1,b1, ...]
+  (function buildLUT() {
+    const scale = d3.scaleSequential(d3.interpolateYlGn).domain([0, 1]);
+    for (let i = 0; i < LUT_SIZE; i++) {
+      const rgb = d3.rgb(scale(i / (LUT_SIZE - 1)));
+      colorLUT[i * 3]     = rgb.r;
+      colorLUT[i * 3 + 1] = rgb.g;
+      colorLUT[i * 3 + 2] = rgb.b;
+    }
+  })();
+
+  // NULL pixel colour (grey for ocean/missing data)
+  const NULL_R = 0xe0, NULL_G = 0xe0, NULL_B = 0xe0;
+
+  // PERF: fast pixel writer using the LUT instead of per-pixel d3 object alloc
+  function gridToImageData(grid, imageData) {
+    const rows = grid.length, cols = grid[0].length;
+    const data = imageData.data;
+    let i = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const v = grid[r][c];
+        if (v === null) {
+          data[i++] = NULL_R; data[i++] = NULL_G; data[i++] = NULL_B; data[i++] = 255;
+        } else {
+          const idx = Math.min(LUT_SIZE - 1, Math.max(0, Math.round(v * (LUT_SIZE - 1)))) * 3;
+          data[i++] = colorLUT[idx]; data[i++] = colorLUT[idx + 1]; data[i++] = colorLUT[idx + 2]; data[i++] = 255;
+        }
+      }
+    }
+  }
+
   // ── Zoom ───────────────────────────────────────────────────────────────────
-  // translateExtent clamps panning: allows ~20% overhang so edge regions
-  // (Canada, Andes) can still be centered, but the map can't pan fully off-screen.
   const PAN_MARGIN = 0.20;
   const zoom = d3.zoom()
     .scaleExtent([1, 20])
@@ -123,22 +182,10 @@ window.addEventListener("DOMContentLoaded", () => {
   // ── NDVI drawing ───────────────────────────────────────────────────────────
   function drawNDVI(grid) {
     const rows = grid.length, cols = grid[0].length;
-    const color = d3.scaleSequential(d3.interpolateYlGn).domain([0, 1]);
     const img = offCtx.createImageData(cols, rows);
-
-    let i = 0;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const v = grid[r][c];
-        const rgb = v === null ? d3.rgb("#e0e0e0") : d3.rgb(color(v));
-        img.data[i++] = rgb.r;
-        img.data[i++] = rgb.g;
-        img.data[i++] = rgb.b;
-        img.data[i++] = 255;
-      }
-    }
-
+    gridToImageData(grid, img);
     offCtx.putImageData(img, 0, 0);
+    // Scale up to full canvas size
     offCtx.drawImage(offscreen, 0, 0, cols, rows, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   }
 
@@ -146,7 +193,6 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!regionName || !REGIONS[regionName]) {
       return { sx: 0, sy: 0, sw: CANVAS_WIDTH, sh: CANVAS_HEIGHT };
     }
-
     const r = REGIONS[regionName];
     const x1 = lonToX(r.lon_min), x2 = lonToX(r.lon_max);
     const y1 = latToY(r.lat_max), y2 = latToY(r.lat_min);
@@ -183,19 +229,22 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const rows = grid.length, cols = grid[0].length;
-    const color = d3.scaleSequential(d3.interpolateYlGn).domain([0, 1]);
     const imageData = targetCtx.createImageData(cols, rows);
+    let hasData = false;
 
-    let i = 0, hasData = false;
+    // PERF: use LUT instead of per-pixel d3 alloc
+    const data = imageData.data;
+    let i = 0;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const value = grid[r][c];
-        const rgb = value === null ? d3.rgb("#e0e0e0") : d3.rgb(color(value));
-        if (value !== null) hasData = true;
-        imageData.data[i++] = rgb.r;
-        imageData.data[i++] = rgb.g;
-        imageData.data[i++] = rgb.b;
-        imageData.data[i++] = 255;
+        if (value === null) {
+          data[i++] = NULL_R; data[i++] = NULL_G; data[i++] = NULL_B; data[i++] = 255;
+        } else {
+          hasData = true;
+          const idx = Math.min(LUT_SIZE - 1, Math.max(0, Math.round(value * (LUT_SIZE - 1)))) * 3;
+          data[i++] = colorLUT[idx]; data[i++] = colorLUT[idx + 1]; data[i++] = colorLUT[idx + 2]; data[i++] = 255;
+        }
       }
     }
 
@@ -208,9 +257,10 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = cols; tempCanvas.height = rows;
-    tempCanvas.getContext("2d").putImageData(imageData, 0, 0);
+    // PERF: reuse persistent tempCanvas instead of allocating a new one each call
+    tempCanvas.width = cols;
+    tempCanvas.height = rows;
+    tempCtx.putImageData(imageData, 0, 0);
     const crop = cropForRegion(focusedRegionName);
     const sx = crop.sx * cols / CANVAS_WIDTH;
     const sy = crop.sy * rows / CANVAS_HEIGHT;
@@ -229,12 +279,13 @@ window.addEventListener("DOMContentLoaded", () => {
     targetCtx.lineWidth = focusedRegionName ? 2.5 : 1.5;
     targetCtx.font = "12px Arial";
 
-    for (const [name, r] of Object.entries(REGIONS)) {
+    // PERF: use pre-computed pixel coords
+    for (const { name, x1: rx1, x2: rx2, y1: ry1, y2: ry2 } of REGION_PIXEL_COORDS) {
       if (focusedRegionName && name !== focusedRegionName) continue;
-      const x1 = (lonToX(r.lon_min) - crop.sx) * scaleX;
-      const x2 = (lonToX(r.lon_max) - crop.sx) * scaleX;
-      const y1 = (latToY(r.lat_max) - crop.sy) * scaleY;
-      const y2 = (latToY(r.lat_min) - crop.sy) * scaleY;
+      const x1 = (rx1 - crop.sx) * scaleX;
+      const x2 = (rx2 - crop.sx) * scaleX;
+      const y1 = (ry1 - crop.sy) * scaleY;
+      const y2 = (ry2 - crop.sy) * scaleY;
       targetCtx.strokeStyle = name === focusedRegionName ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.9)";
       targetCtx.fillStyle = name === focusedRegionName ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.95)";
       if (name === focusedRegionName) targetCtx.fillRect(x1, y1, x2 - x1, y2 - y1);
@@ -271,8 +322,25 @@ window.addEventListener("DOMContentLoaded", () => {
     return count ? sum / count : null;
   }
 
+  // ── Mean for arbitrary data-space rect ────────────────────────────────────
+  function meanForDataRect(grid, rect) {
+    if (!grid || !rect) return null;
+    const rows = grid.length, cols = grid[0].length;
+    const c1 = Math.max(0, Math.floor(rect.x1 * cols / CANVAS_WIDTH));
+    const c2 = Math.min(cols, Math.ceil(rect.x2 * cols / CANVAS_WIDTH));
+    const r1 = Math.max(0, Math.floor(rect.y1 * rows / CANVAS_HEIGHT));
+    const r2 = Math.min(rows, Math.ceil(rect.y2 * rows / CANVAS_HEIGHT));
+    let sum = 0, count = 0;
+    for (let r = r1; r < r2; r++)
+      for (let c = c1; c < c2; c++) {
+        const v = grid[r][c];
+        if (v !== null) { sum += v; count++; }
+      }
+    return count ? sum / count : null;
+  }
+
   function updateRegionList(grid, listSelection, interactive = false) {
-    const rows = Object.entries(REGIONS).map(([name, box]) => ({ name, value: meanForRegion(grid, box) }));
+    const rows = REGION_ENTRIES.map(([name, box]) => ({ name, value: meanForRegion(grid, box) }));
     listSelection.selectAll("li").data(rows).join("li")
       .style("cursor", interactive ? "pointer" : null)
       .style("text-decoration", d => interactive && d.name === compareFocusedRegion ? "underline" : null)
@@ -304,7 +372,8 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateCompareView() {
-    if (!cacheReady) return;
+    // PERF: skip entirely when compare panel is hidden
+    if (!compareMode || !cacheReady) return;
     const leftMonth = months[slider.node().value];
     const rightMonth = compareRightSelect.property("value");
     const suffix = compareFocusedRegion ? ` · ${compareFocusedRegion}` : "";
@@ -343,6 +412,7 @@ window.addEventListener("DOMContentLoaded", () => {
         canvas.style.cursor = "default";
         selStartPx = selCurPx = selDataRect = null;
         document.getElementById("ndvi-avg").style.display = "none";
+        hideSummaryStatsBtn();
       }
       storyMode = false;
       sliderLocked = false;
@@ -388,9 +458,8 @@ window.addEventListener("DOMContentLoaded", () => {
   function drawRegions() {
     ctx.font = `${12 / currentTransform.k}px Arial`;
 
-    for (const [name, r] of Object.entries(REGIONS)) {
-      const x1 = lonToX(r.lon_min), x2 = lonToX(r.lon_max);
-      const y1 = latToY(r.lat_max), y2 = latToY(r.lat_min);
+    // PERF: use pre-computed pixel coords
+    for (const { name, x1, x2, y1, y2 } of REGION_PIXEL_COORDS) {
       const isHovered = name === hoveredRegionName;
 
       ctx.lineWidth = (isHovered ? 4 : 2) / currentTransform.k;
@@ -418,22 +487,15 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function regionAt(dataX, dataY) {
-    for (const [name, r] of Object.entries(REGIONS)) {
-      const x1 = lonToX(r.lon_min), x2 = lonToX(r.lon_max);
-      const y1 = latToY(r.lat_max), y2 = latToY(r.lat_min);
+    // PERF: use pre-computed pixel coords
+    for (const { name, x1, x2, y1, y2 } of REGION_PIXEL_COORDS) {
       if (dataX >= x1 && dataX <= x2 && dataY >= y1 && dataY <= y2)
         return { name, x1, x2, y1, y2 };
     }
     return null;
   }
 
-  // ── Zoom to a named region (used by both click and Scrollama) ──────────────
-  /**
-   * Animate the canvas zoom to a named region.
-   * @param {string} regionName   — key in REGIONS
-   * @param {number} [padding=0.8] — fraction of viewport to fill (0–1)
-   * @returns Promise that resolves when the zoom transition ends
-   */
+  // ── Zoom to a named region ─────────────────────────────────────────────────
   function zoomToRegion(regionName, padding = 0.8) {
     return new Promise(resolve => {
       const r = REGIONS[regionName];
@@ -456,7 +518,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /** Animate zoom back to the full extent */
   function zoomToFull() {
     return new Promise(resolve => {
       if (activeZoomTransition) activeZoomTransition.end();
@@ -471,21 +532,22 @@ window.addEventListener("DOMContentLoaded", () => {
   canvas.addEventListener("mousedown", e => {
     if (!selectionMode) return;
     e.stopPropagation();
-    const rect = canvas.getBoundingClientRect();
-    const [dx, dy] = canvasToData(e.clientX - rect.left, e.clientY - rect.top);
+    const r = getCanvasRect();
+    const [dx, dy] = canvasToData(e.clientX - r.left, e.clientY - r.top);
     selStartPx = { x: dx, y: dy };
     selCurPx = { x: dx, y: dy };
     isDrawing = true;
     selDataRect = null;
     document.getElementById("ndvi-avg").style.display = "none";
+    hideSummaryStatsBtn();
   });
 
   canvas.addEventListener("mousemove", e => {
     if (selectionMode && isDrawing) {
-      const rect = canvas.getBoundingClientRect();
-      const [dx, dy] = canvasToData(e.clientX - rect.left, e.clientY - rect.top);
+      const r = getCanvasRect();
+      const [dx, dy] = canvasToData(e.clientX - r.left, e.clientY - r.top);
       selCurPx = { x: dx, y: dy };
-      redraw();
+      scheduleRedraw(); // PERF: RAF-guarded instead of direct redraw
     } else {
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
@@ -501,10 +563,17 @@ window.addEventListener("DOMContentLoaded", () => {
     if (Math.abs(selCurPx.x - selStartPx.x) < minSize || Math.abs(selCurPx.y - selStartPx.y) < minSize) {
       selStartPx = selCurPx = null;
       redraw();
+      hideSummaryStatsBtn();
       return;
     }
-    selDataRect = { x1: Math.min(selStartPx.x, selCurPx.x), y1: Math.min(selStartPx.y, selCurPx.y), x2: Math.max(selStartPx.x, selCurPx.x), y2: Math.max(selStartPx.y, selCurPx.y) };
+    selDataRect = {
+      x1: Math.min(selStartPx.x, selCurPx.x),
+      y1: Math.min(selStartPx.y, selCurPx.y),
+      x2: Math.max(selStartPx.x, selCurPx.x),
+      y2: Math.max(selStartPx.y, selCurPx.y)
+    };
     computeAndShowAverage();
+    showSummaryStatsBtn();
     redraw();
   });
 
@@ -528,6 +597,331 @@ window.addEventListener("DOMContentLoaded", () => {
     avgEl.style.display = "block";
   }
 
+  // ── Summary stats button ───────────────────────────────────────────────────
+  function showSummaryStatsBtn() {
+    let btn = document.getElementById("btn-summary-stats");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = "btn-summary-stats";
+      btn.textContent = "📈 Summary stats";
+      Object.assign(btn.style, {
+        fontFamily: "var(--mono)",
+        fontSize: ".72rem",
+        letterSpacing: ".06em",
+        textTransform: "uppercase",
+        background: "var(--accent)",
+        color: "#fff",
+        border: "none",
+        padding: ".4rem .9rem",
+        cursor: "pointer",
+        borderRadius: "2px",
+        transition: "opacity .2s",
+      });
+      btn.addEventListener("click", openSummaryStatsModal);
+      const toggleSelectBtn = document.getElementById("toggle-select");
+      toggleSelectBtn.parentNode.insertBefore(btn, toggleSelectBtn.nextSibling);
+    }
+    btn.style.display = "inline-block";
+  }
+
+  function hideSummaryStatsBtn() {
+    const btn = document.getElementById("btn-summary-stats");
+    if (btn) btn.style.display = "none";
+  }
+
+  // ── Summary stats modal ────────────────────────────────────────────────────
+  function buildYearlyData(rect) {
+    const yearMap = {};
+    for (const ym of months) {
+      const grid = gridCache[ym];
+      if (!grid) continue;
+      const val = meanForDataRect(grid, rect);
+      if (val === null) continue;
+      const year = parseInt(ym.split("-")[0]);
+      if (!yearMap[year]) yearMap[year] = [];
+      yearMap[year].push(val);
+    }
+    return Object.entries(yearMap).map(([year, vals]) => ({
+      year: +year,
+      mean: vals.reduce((a, b) => a + b, 0) / vals.length,
+    })).sort((a, b) => a.year - b.year);
+  }
+
+  function buildMonthlyData(rect) {
+    return months.map(ym => {
+      const grid = gridCache[ym];
+      const val = grid ? meanForDataRect(grid, rect) : null;
+      const [y, m] = ym.split("-").map(Number);
+      return { date: new Date(y, m - 1, 1), value: val };
+    }).filter(d => d.value !== null);
+  }
+
+  function openSummaryStatsModal() {
+    if (!selDataRect || !cacheReady) return;
+
+    const existing = document.getElementById("stats-modal-overlay");
+    if (existing) existing.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "stats-modal-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed", inset: "0",
+      background: "rgba(26,26,24,0.72)",
+      zIndex: "500", display: "flex",
+      alignItems: "center", justifyContent: "center",
+      padding: "1.5rem", backdropFilter: "blur(3px)",
+    });
+
+    const modal = document.createElement("div");
+    Object.assign(modal.style, {
+      background: "var(--paper)", border: "1px solid var(--rule)",
+      borderRadius: "6px", width: "min(860px, 100%)",
+      maxHeight: "90vh", display: "flex",
+      flexDirection: "column", overflow: "hidden",
+      boxShadow: "0 8px 40px rgba(0,0,0,0.28)",
+    });
+
+    const header = document.createElement("div");
+    Object.assign(header.style, {
+      padding: ".7rem 1.1rem", borderBottom: "1px solid var(--rule)",
+      background: "var(--paper-2)", display: "flex",
+      alignItems: "center", justifyContent: "space-between", flexShrink: "0",
+    });
+    header.innerHTML = `<div><span style="font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);">Selected Region · NDVI Time Series</span></div>`;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "×";
+    Object.assign(closeBtn.style, {
+      fontFamily: "var(--mono)", fontSize: "1.1rem", lineHeight: "1",
+      background: "transparent", border: "1px solid var(--rule)",
+      color: "var(--ink-light)", width: "28px", height: "28px",
+      cursor: "pointer", borderRadius: "2px", display: "flex",
+      alignItems: "center", justifyContent: "center",
+    });
+    closeBtn.addEventListener("click", () => overlay.remove());
+    header.appendChild(closeBtn);
+
+    const tabBar = document.createElement("div");
+    Object.assign(tabBar.style, {
+      padding: ".45rem 1.1rem 0", borderBottom: "1px solid var(--rule)",
+      display: "flex", gap: "0", background: "var(--paper)", flexShrink: "0",
+    });
+
+    const tabBtnStyle = (active) => ({
+      fontFamily: "var(--mono)", fontSize: ".7rem", letterSpacing: ".08em",
+      textTransform: "uppercase", background: "transparent", border: "none",
+      borderBottom: active ? "2px solid var(--accent)" : "2px solid transparent",
+      color: active ? "var(--accent)" : "var(--ink-faint)",
+      padding: ".4rem .9rem", cursor: "pointer", marginBottom: "-1px",
+      transition: "color .2s, border-color .2s",
+    });
+
+    const tabYearly = document.createElement("button");
+    tabYearly.textContent = "Yearly averages";
+    const tabMonthly = document.createElement("button");
+    tabMonthly.textContent = "Monthly series";
+    Object.assign(tabYearly.style, tabBtnStyle(true));
+    Object.assign(tabMonthly.style, tabBtnStyle(false));
+    tabBar.appendChild(tabYearly);
+    tabBar.appendChild(tabMonthly);
+
+    const chartContainer = document.createElement("div");
+    Object.assign(chartContainer.style, {
+      flex: "1", minHeight: "0", padding: "1.5rem 1.5rem 1rem", overflowY: "auto",
+    });
+
+    const statsRow = document.createElement("div");
+    Object.assign(statsRow.style, {
+      padding: ".5rem 1.5rem .7rem", borderTop: "1px solid var(--rule)",
+      display: "flex", gap: "2rem", flexWrap: "wrap",
+      background: "var(--paper-2)", flexShrink: "0",
+    });
+
+    modal.appendChild(header);
+    modal.appendChild(tabBar);
+    modal.appendChild(chartContainer);
+    modal.appendChild(statsRow);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+
+    const yearlyData = buildYearlyData(selDataRect);
+    const monthlyData = buildMonthlyData(selDataRect);
+
+    function renderStats(data) {
+      const vals = data.map(d => d.value ?? d.mean).filter(v => v != null);
+      if (!vals.length) { statsRow.innerHTML = ""; return; }
+      const mn = d3.min(vals), mx = d3.max(vals), avg = d3.mean(vals);
+      const n = data.length;
+      const xs = data.map((_, i) => i);
+      const ys = data.map(d => d.value ?? d.mean);
+      const xMean = d3.mean(xs), yMean = d3.mean(ys);
+      const slope = d3.sum(xs.map((x, i) => (x - xMean) * (ys[i] - yMean))) /
+                    d3.sum(xs.map(x => (x - xMean) ** 2));
+      const trendDir = slope > 0.0001 ? "↑ Increasing" : slope < -0.0001 ? "↓ Decreasing" : "→ Stable";
+      statsRow.innerHTML = [
+        ["Min", mn.toFixed(4)], ["Max", mx.toFixed(4)], ["Mean", avg.toFixed(4)],
+        ["Range", (mx - mn).toFixed(4)], ["Trend", trendDir],
+      ].map(([label, val]) => `
+        <div>
+          <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.15rem;">${label}</div>
+          <div style="font-family:var(--mono);font-size:.82rem;color:var(--ink);font-weight:500;">${val}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderYearlyChart() {
+      chartContainer.innerHTML = "";
+      if (!yearlyData.length) {
+        chartContainer.innerHTML = `<p style="font-family:var(--mono);font-size:.8rem;color:var(--ink-faint);text-align:center;padding:3rem;">No data available for selection.</p>`;
+        return;
+      }
+      const W = chartContainer.clientWidth - 20 || 780;
+      const H = 320;
+      const margin = { top: 24, right: 28, bottom: 44, left: 52 };
+      const iW = W - margin.left - margin.right;
+      const iH = H - margin.top - margin.bottom;
+      const svg = d3.select(chartContainer).append("svg")
+        .attr("width", "100%").attr("viewBox", `0 0 ${W} ${H}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+      const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+      const xScale = d3.scaleBand().domain(yearlyData.map(d => d.year)).range([0, iW]).padding(0.25);
+      const yExtent = d3.extent(yearlyData, d => d.mean);
+      const yPad = (yExtent[1] - yExtent[0]) * 0.12 || 0.02;
+      const yScale = d3.scaleLinear().domain([yExtent[0] - yPad, yExtent[1] + yPad]).range([iH, 0]).nice();
+      g.append("g").call(d3.axisLeft(yScale).tickSize(-iW).tickFormat(""))
+        .selectAll("line").style("stroke", "var(--rule)").style("stroke-dasharray", "3,3");
+      g.select(".domain").remove();
+      const trendLine = d3.line().x(d => xScale(d.year) + xScale.bandwidth() / 2).y(d => yScale(d.mean));
+      const xs2 = yearlyData.map((_, i) => i), ys2 = yearlyData.map(d => d.mean);
+      const xM = d3.mean(xs2), yM = d3.mean(ys2);
+      const sl = d3.sum(xs2.map((x, i) => (x - xM) * (ys2[i] - yM))) / d3.sum(xs2.map(x => (x - xM) ** 2));
+      const ic = yM - sl * xM;
+      const trendData = yearlyData.map((d, i) => ({ year: d.year, mean: ic + sl * i }));
+      g.append("path").datum(trendData).attr("fill", "none")
+        .attr("stroke", "var(--accent-3)").attr("stroke-width", 1.5)
+        .attr("stroke-dasharray", "5,4").attr("opacity", 0.7).attr("d", trendLine);
+
+      const tooltip = d3.select(chartContainer).append("div")
+        .style("position", "absolute").style("background", "rgba(255,255,255,0.97)")
+        .style("border", "1px solid var(--rule)").style("border-radius", "3px")
+        .style("padding", ".4rem .65rem").style("font-family", "var(--mono)")
+        .style("font-size", ".72rem").style("color", "var(--ink)")
+        .style("pointer-events", "none").style("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+        .style("opacity", 0).style("z-index", "10");
+
+      g.selectAll(".bar").data(yearlyData).join("rect").attr("class", "bar")
+        .attr("x", d => xScale(d.year)).attr("width", xScale.bandwidth())
+        .attr("y", d => yScale(d.mean)).attr("height", d => iH - yScale(d.mean))
+        .attr("fill", "var(--accent)").attr("opacity", 0.75).attr("rx", 1)
+        .on("mouseover", function(event, d) {
+          d3.select(this).attr("opacity", 1);
+          tooltip.style("opacity", 1).html(`<strong>${d.year}</strong><br/>Mean NDVI: ${d.mean.toFixed(4)}`);
+        })
+        .on("mousemove", function(event) {
+          const r = chartContainer.getBoundingClientRect();
+          tooltip.style("left", (event.clientX - r.left + 10) + "px").style("top", (event.clientY - r.top - 28) + "px");
+        })
+        .on("mouseleave", function() { d3.select(this).attr("opacity", 0.75); tooltip.style("opacity", 0); });
+
+      g.append("g").attr("transform", `translate(0,${iH})`).call(
+        d3.axisBottom(xScale).tickValues(yearlyData.filter((_, i) => i % 3 === 0).map(d => d.year))
+      ).selectAll("text").style("font-family", "var(--mono)").style("font-size", "10px").style("fill", "var(--ink-faint)");
+      g.append("g").call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format(".3f")))
+        .selectAll("text").style("font-family", "var(--mono)").style("font-size", "10px").style("fill", "var(--ink-faint)");
+      g.selectAll(".domain").style("stroke", "var(--rule)");
+      g.append("text").attr("transform", `translate(${iW / 2},${iH + 36})`).attr("text-anchor", "middle")
+        .style("font-family", "var(--mono)").style("font-size", "10px").style("fill", "var(--ink-faint)").text("Year");
+      g.append("text").attr("transform", "rotate(-90)").attr("x", -iH / 2).attr("y", -40)
+        .attr("text-anchor", "middle").style("font-family", "var(--mono)").style("font-size", "10px")
+        .style("fill", "var(--ink-faint)").text("Mean NDVI (vegetation proxy)");
+      const leg = g.append("g").attr("transform", `translate(${iW - 140}, 2)`);
+      leg.append("line").attr("x1", 0).attr("x2", 18).attr("y1", 6).attr("y2", 6)
+        .attr("stroke", "var(--accent-3)").attr("stroke-width", 1.5).attr("stroke-dasharray", "5,4").attr("opacity", 0.8);
+      leg.append("text").attr("x", 22).attr("y", 10)
+        .style("font-family", "var(--mono)").style("font-size", "9.5px").style("fill", "var(--ink-faint)").text("Linear trend");
+      renderStats(yearlyData);
+    }
+
+    function renderMonthlyChart() {
+      chartContainer.innerHTML = "";
+      if (!monthlyData.length) {
+        chartContainer.innerHTML = `<p style="font-family:var(--mono);font-size:.8rem;color:var(--ink-faint);text-align:center;padding:3rem;">No data available for selection.</p>`;
+        return;
+      }
+      const W = chartContainer.clientWidth - 20 || 780;
+      const H = 320;
+      const margin = { top: 24, right: 28, bottom: 48, left: 52 };
+      const iW = W - margin.left - margin.right;
+      const iH = H - margin.top - margin.bottom;
+      const svg = d3.select(chartContainer).append("svg")
+        .attr("width", "100%").attr("viewBox", `0 0 ${W} ${H}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+      const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+      const xScale = d3.scaleTime().domain(d3.extent(monthlyData, d => d.date)).range([0, iW]);
+      const yExtent = d3.extent(monthlyData, d => d.value);
+      const yPad = (yExtent[1] - yExtent[0]) * 0.10 || 0.02;
+      const yScale = d3.scaleLinear().domain([yExtent[0] - yPad, yExtent[1] + yPad]).range([iH, 0]).nice();
+      g.append("g").call(d3.axisLeft(yScale).tickSize(-iW).tickFormat(""))
+        .selectAll("line").style("stroke", "var(--rule)").style("stroke-dasharray", "3,3");
+      const area = d3.area().x(d => xScale(d.date)).y0(iH).y1(d => yScale(d.value)).curve(d3.curveMonotoneX);
+      g.append("path").datum(monthlyData).attr("fill", "var(--accent)").attr("opacity", 0.12).attr("d", area);
+      const line = d3.line().x(d => xScale(d.date)).y(d => yScale(d.value)).curve(d3.curveMonotoneX);
+      g.append("path").datum(monthlyData).attr("fill", "none").attr("stroke", "var(--accent)").attr("stroke-width", 1.5).attr("d", line);
+      const bisect = d3.bisector(d => d.date).left;
+      const focusDot = g.append("circle").attr("r", 4).attr("fill", "var(--accent)").style("opacity", 0);
+      const tooltip = d3.select(chartContainer).append("div")
+        .style("position", "absolute").style("background", "rgba(255,255,255,0.97)")
+        .style("border", "1px solid var(--rule)").style("border-radius", "3px")
+        .style("padding", ".4rem .65rem").style("font-family", "var(--mono)")
+        .style("font-size", ".72rem").style("color", "var(--ink)")
+        .style("pointer-events", "none").style("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+        .style("opacity", 0).style("z-index", "10");
+      svg.append("rect").attr("transform", `translate(${margin.left},${margin.top})`)
+        .attr("width", iW).attr("height", iH).attr("fill", "transparent")
+        .on("mousemove", function(event) {
+          const [mx] = d3.pointer(event);
+          const x0 = xScale.invert(mx);
+          const idx = bisect(monthlyData, x0, 1);
+          const d0 = monthlyData[idx - 1], d1 = monthlyData[idx];
+          const d = d1 && (x0 - d0.date > d1.date - x0) ? d1 : d0;
+          if (!d) return;
+          focusDot.style("opacity", 1).attr("cx", xScale(d.date)).attr("cy", yScale(d.value));
+          const ym = `${d.date.getFullYear()}-${String(d.date.getMonth() + 1).padStart(2, "0")}`;
+          const cr = chartContainer.getBoundingClientRect();
+          tooltip.style("opacity", 1).html(`<strong>${ym}</strong><br/>NDVI: ${d.value.toFixed(4)}`)
+            .style("left", (event.clientX - cr.left + 12) + "px").style("top", (event.clientY - cr.top - 30) + "px");
+        })
+        .on("mouseleave", () => { focusDot.style("opacity", 0); tooltip.style("opacity", 0); });
+      g.append("g").attr("transform", `translate(0,${iH})`).call(d3.axisBottom(xScale).ticks(d3.timeYear.every(2)))
+        .selectAll("text").style("font-family", "var(--mono)").style("font-size", "10px").style("fill", "var(--ink-faint)");
+      g.append("g").call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format(".3f")))
+        .selectAll("text").style("font-family", "var(--mono)").style("font-size", "10px").style("fill", "var(--ink-faint)");
+      g.selectAll(".domain").style("stroke", "var(--rule)");
+      g.append("text").attr("transform", `translate(${iW / 2},${iH + 38})`).attr("text-anchor", "middle")
+        .style("font-family", "var(--mono)").style("font-size", "10px").style("fill", "var(--ink-faint)").text("Month");
+      g.append("text").attr("transform", "rotate(-90)").attr("x", -iH / 2).attr("y", -40)
+        .attr("text-anchor", "middle").style("font-family", "var(--mono)").style("font-size", "10px")
+        .style("fill", "var(--ink-faint)").text("Mean NDVI (vegetation proxy)");
+      renderStats(monthlyData.map(d => ({ value: d.value })));
+    }
+
+    tabYearly.addEventListener("click", () => {
+      Object.assign(tabYearly.style, tabBtnStyle(true));
+      Object.assign(tabMonthly.style, tabBtnStyle(false));
+      renderYearlyChart();
+    });
+    tabMonthly.addEventListener("click", () => {
+      Object.assign(tabMonthly.style, tabBtnStyle(true));
+      Object.assign(tabYearly.style, tabBtnStyle(false));
+      renderMonthlyChart();
+    });
+
+    renderYearlyChart();
+  }
+
+  // ── Toggle-select button ───────────────────────────────────────────────────
   document.getElementById("toggle-select").addEventListener("click", () => {
     selectionMode = !selectionMode;
     const btn = document.getElementById("toggle-select");
@@ -537,45 +931,35 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!selectionMode) {
       selStartPx = selCurPx = selDataRect = null;
       document.getElementById("ndvi-avg").style.display = "none";
+      hideSummaryStatsBtn();
       redraw();
     }
   });
 
-  // ── Click-to-zoom (manual, in Ch4 interactive section) ────────────────────
+  // ── Click-to-zoom ──────────────────────────────────────────────────────────
   canvas.addEventListener("click", e => {
     if (selectionMode) return;
-
     if (storyMode) { storyMode = false; sliderLocked = false; }
-
-    const rect = canvas.getBoundingClientRect();
-    const [dataX, dataY] = canvasToData(e.clientX - rect.left, e.clientY - rect.top);
+    const r = getCanvasRect();
+    const [dataX, dataY] = canvasToData(e.clientX - r.left, e.clientY - r.top);
     const hit = regionAt(dataX, dataY);
-
-    if (!hit) {
-      storyMode = false; sliderLocked = false;
-      zoomToFull();
-      return;
-    }
-
+    if (!hit) { storyMode = false; sliderLocked = false; zoomToFull(); return; }
     zoomToRegion(hit.name).then(() => playTimeline(hit.name));
   });
 
   // ── Hover logic ────────────────────────────────────────────────────────────
   function updateHoverFromMouse() {
     if (!currentGrid || lastMouseX === null) return;
-    const rect = canvas.getBoundingClientRect();
-    const [dataX, dataY] = canvasToData(lastMouseX - rect.left, lastMouseY - rect.top);
+    const r = getCanvasRect();
+    const [dataX, dataY] = canvasToData(lastMouseX - r.left, lastMouseY - r.top);
     const rows = currentGrid.length, cols = currentGrid[0].length;
     const col = Math.floor(dataX * cols / CANVAS_WIDTH);
     const row = Math.floor(dataY * rows / CANVAS_HEIGHT);
-
     if (col < 0 || col >= cols || row < 0 || row >= rows) { hover.text("Vegetation proxy: —"); return; }
-
     const value = currentGrid[row][col];
     const proxyText = value === null ? "Vegetation proxy: —" : `Vegetation proxy: ${value.toFixed(3)}`;
     const region = regionAt(dataX, dataY);
     const nextName = region ? region.name : null;
-
     if (nextName !== hoveredRegionName) { hoveredRegionName = nextName; redraw(); }
     hover.text(region ? `${region.name} — ${proxyText}` : proxyText);
   }
@@ -586,18 +970,23 @@ window.addEventListener("DOMContentLoaded", () => {
     if (hoveredRegionName !== null) { hoveredRegionName = null; redraw(); }
   });
 
-  // ── Preload & update ───────────────────────────────────────────────────────
+  // ── Preload — batched fetches ──────────────────────────────────────────────
   async function preloadAll() {
     title.text("Loading data…");
-    await Promise.all(months.map(async ym => {
-      try { gridCache[ym] = await d3.json(`ndvi_json/${ym}.json`); }
-      catch { gridCache[ym] = null; }
-    }));
+
+    // PERF: fetch in batches of 8 to avoid saturating the browser's connection pool
+    const BATCH = 8;
+    for (let i = 0; i < months.length; i += BATCH) {
+      await Promise.all(months.slice(i, i + BATCH).map(async ym => {
+        try { gridCache[ym] = await d3.json(`ndvi_json/${ym}.json`); }
+        catch { gridCache[ym] = null; }
+      }));
+    }
+
     cacheReady = true;
     title.text(`NDVI — ${months[0]}`);
     populateCompareSelects();
     update();
-    updateCompareView();
   }
 
   function update() {
@@ -626,9 +1015,7 @@ window.addEventListener("DOMContentLoaded", () => {
   async function playTimeline(regionName) {
     storyMode = true;
     sliderLocked = true;
-
     if (REGION_INFO[regionName]) showPopup(REGION_INFO[regionName], regionName, true);
-
     for (let i = 0; i < months.length; i++) {
       if (!storyMode) break;
       slider.node().value = i;
@@ -637,7 +1024,6 @@ window.addEventListener("DOMContentLoaded", () => {
       if (event) { showPopup(event.msg, regionName, false); await sleep(3000); }
       else        { await sleep(100); }
     }
-
     storyMode = false;
     sliderLocked = false;
   }
@@ -645,27 +1031,27 @@ window.addEventListener("DOMContentLoaded", () => {
   function isInteresting(regionName, ym) {
     const [year, month] = ym.split("-").map(Number);
     const interesting = {
-      "Midwest":          [{ y: 2014, m: 3,  msg: "Lowest vegetation score recorded for the Midwest, 2000–2025" }, { y: 2025, m: 8,  msg: "The Midwest's greatest outlier month: vegetation proxy 0.376 above the regional mean" }],
-      "Amazon":           [{ y: 2024, m: 9,  msg: "Lowest vegetation score recorded in the Amazon region" }],
-      "Western US":       [{ y: 2008, m: 1,  msg: "Lowest vegetation score recorded in the Western US" }],
-      "Central America":  [{ y: 2024, m: 10, msg: "Highest vegetation score recorded for any region!" }, { y: 2009, m: 4,  msg: "Lowest vegetation score recorded for Central America" }],
-      "Andes":            [{ y: 2003, m: 2,  msg: "Lowest vegetation score recorded in the Andes" }],
-      "Canada/Arctic":    [{ y: 2012, m: 12, msg: "Lowest score recorded for any region across the full 25-year dataset!" }, { y: 2021, m: 11, msg: "Greatest month-over-month increase in vegetation score across the dataset" }, { y: 2011, m: 4,  msg: "Greatest month-over-month decrease in vegetation score across the dataset" }],
+      "Midwest":         [{ y: 2014, m: 3,  msg: "Lowest vegetation score recorded for the Midwest, 2000–2025" }, { y: 2025, m: 8, msg: "The Midwest's greatest outlier month: vegetation proxy 0.376 above the regional mean" }],
+      "Amazon":          [{ y: 2024, m: 9,  msg: "Lowest vegetation score recorded in the Amazon region" }],
+      "Western US":      [{ y: 2008, m: 1,  msg: "Lowest vegetation score recorded in the Western US" }],
+      "Central America": [{ y: 2024, m: 10, msg: "Highest vegetation score recorded for any region!" }, { y: 2009, m: 4, msg: "Lowest vegetation score recorded for Central America" }],
+      "Andes":           [{ y: 2003, m: 2,  msg: "Lowest vegetation score recorded in the Andes" }],
+      "Canada/Arctic":   [{ y: 2012, m: 12, msg: "Lowest score recorded for any region across the full 25-year dataset!" }, { y: 2021, m: 11, msg: "Greatest month-over-month increase in vegetation score across the dataset" }, { y: 2011, m: 4, msg: "Greatest month-over-month decrease in vegetation score across the dataset" }],
     };
     const rules = interesting[regionName] || [];
     return rules.find(r => r.y === year && r.m === month) || null;
   }
 
-  // ── Popup ───────────────────────────────────────────────────────────────────
+  // ── Popup ──────────────────────────────────────────────────────────────────
   function getRegionScreenRect(region) {
-    const canvasRect = canvas.getBoundingClientRect();
+    const canvasR = canvas.getBoundingClientRect();
     const containerRect = document.getElementById("viz-container").getBoundingClientRect();
-    const scaleX = CANVAS_WIDTH / canvasRect.width, scaleY = CANVAS_HEIGHT / canvasRect.height;
+    const scaleX = CANVAS_WIDTH / canvasR.width, scaleY = CANVAS_HEIGHT / canvasR.height;
     const [sx1, sy1] = currentTransform.apply([region.x1, region.y1]);
     const [sx2, sy2] = currentTransform.apply([region.x2, region.y2]);
     return {
-      left:   sx1 / scaleX + (canvasRect.left - containerRect.left),
-      top:    sy1 / scaleY + (canvasRect.top  - containerRect.top),
+      left:   sx1 / scaleX + (canvasR.left - containerRect.left),
+      top:    sy1 / scaleY + (canvasR.top  - containerRect.top),
       width:  (sx2 - sx1) / scaleX,
       height: (sy2 - sy1) / scaleY,
     };
@@ -681,17 +1067,13 @@ window.addEventListener("DOMContentLoaded", () => {
     const icon = isIntro ? "ℹ" : "📍";
     const label = isIntro ? "Region overview" : regionName;
     const displayMs = isIntro ? 4000 : 2200;
-
     box.html(`
       <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:${accentColor};text-transform:uppercase;letter-spacing:0.06em;">${icon} ${label}</p>
       <p style="margin:0;">${text}</p>
     `)
-    .style("left", rect.left + 10 + "px")
-    .style("top",  rect.top  + 10 + "px")
+    .style("left", rect.left + 10 + "px").style("top", rect.top + 10 + "px")
     .style("max-width", Math.min(rect.width - 24, 300) + "px")
-    .style("transform", "none")
-    .style("opacity", 1);
-
+    .style("transform", "none").style("opacity", 1);
     setTimeout(() => box.transition().duration(800).style("opacity", 0), displayMs);
   }
 
@@ -717,20 +1099,10 @@ window.addEventListener("DOMContentLoaded", () => {
   compareRightCanvas.addEventListener("mouseleave", () => compareRightHover.text(compareFocusedRegion ? `${compareFocusedRegion} focus · click × to exit` : "Click a region box to zoom both maps"));
 
   // ══════════════════════════════════════════════════════════════════════════
-  //  SCROLLAMA — wires each .step to the NDVI map in Ch4's viz
-  //
-  //  The Ch4 canvas lives inside #ch4 (full-width section, not a
-  //  scrollytelling layout). The scrollytelling sections (1-3) use static
-  //  images in their own .scroll-graphic panels. Scrollama drives:
-  //    • graphic panel transitions (static image swaps in sections 1–3)
-  //    • a special "scroll into Ch4" handler that zooms the canvas
-  //      to the region highlighted by the last narrative step
+  //  SCROLLAMA
   // ══════════════════════════════════════════════════════════════════════════
-
-  // ── Graphic panel transitions for sections 1–3 ──────────────────────────
   function switchGraphicPanel(panelId) {
     if (!panelId) return;
-    // Find the parent .scroll-graphic__inner
     const panel = document.getElementById(panelId);
     if (!panel) return;
     const inner = panel.closest(".scroll-graphic__inner");
@@ -739,20 +1111,13 @@ window.addEventListener("DOMContentLoaded", () => {
     panel.classList.add("visible");
   }
 
-  // ── Per-step scroll actions ────────────────────────────────────────────────
-  // Each entry maps data-step → { graphicPanel?, regionFocus?, label? }
   const STEP_ACTIONS = {
-    // Section 1 — all show the same NDVI map panel (no region zoom)
     "1-1": { graphicPanel: "panel-ndvi-map",         label: "MODIS NDVI · Americas · Jul 2024 · NASA GIBS" },
     "1-2": { graphicPanel: "panel-ndvi-map",         label: "MODIS NDVI · Americas · Jul 2024 · NASA GIBS" },
     "1-3": { graphicPanel: "panel-ndvi-map",         label: "MODIS NDVI · Americas · Jul 2024 · NASA GIBS" },
-
-    // Section 2 — regional trend chart
     "2-1": { graphicPanel: "panel-regional-trends",  label: "Regional NDVI trend slope · all regions positive" },
     "2-2": { graphicPanel: "panel-regional-trends",  label: "Regional NDVI trend slope · 4 significant, 2 uncertain" },
     "2-3": { graphicPanel: "panel-regional-trends",  label: "Regional NDVI trend slope · drivers of greening" },
-
-    // Section 3 — Amazon
     "3-1": { graphicPanel: "panel-amazon-photo",     label: "Amazon basin · dense canopy snapshot" },
     "3-2": { graphicPanel: "panel-amazon-photo",     label: "Amazon basin · density vs. momentum" },
     "3-3": { graphicPanel: "panel-amazon-comp",      label: "Amazon vs Canada/Arctic · diverging trends 2000–2025" },
@@ -761,74 +1126,30 @@ window.addEventListener("DOMContentLoaded", () => {
   function handleStepEnter({ element }) {
     const stepId = element.dataset.step;
     activeScrollStep = stepId;
-
     const action = STEP_ACTIONS[stepId];
     if (!action) return;
-
-    // Switch static graphic panel
     if (action.graphicPanel) switchGraphicPanel(action.graphicPanel);
-
-    // Update graphic label
     const sectionNum = stepId.split("-")[0];
     const labelEl = document.getElementById(`graphic-label-${sectionNum}`);
     if (labelEl && action.label) labelEl.textContent = action.label;
-
-    // Mark active step for styling
     document.querySelectorAll(".step.is-active").forEach(el => el.classList.remove("is-active"));
     element.classList.add("is-active");
   }
 
-  // ── Ch4 entry: zoom canvas to Amazon on first reach ───────────────────────
-  // When the reader scrolls into Ch4 after reading Ch3's Amazon focus,
-  // briefly zoom the interactive canvas to the Amazon to provide continuity.
   let ch4EntryZoomDone = false;
 
   function initScrollamaSteps() {
     const scroller = scrollama();
-
-    scroller
-      .setup({
-        step: ".step",
-        offset: 0.55,   // trigger when step's midpoint crosses 55% down the viewport
-        debug: false,
-      })
+    scroller.setup({ step: ".step", offset: 0.55, debug: false })
       .onStepEnter(handleStepEnter)
-      .onStepExit(({ element }) => {
-        // When scrolling back past the first step of any section, 
-        // deactivate and let the previous step re-activate via its own enter
-      });
-
-    // Resize handler
+      .onStepExit(() => {});
     window.addEventListener("resize", scroller.resize);
-  }
-
-  // ── Ch4 intersection — zoom-to-Amazon on entry ────────────────────────────
-  function initCh4Entry() {
-    const ch4El = document.getElementById("ch4");
-    if (!ch4El) return;
-
-    new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (!e.isIntersecting || ch4EntryZoomDone || !cacheReady) return;
-        ch4EntryZoomDone = true;
-
-        // Short delay so the section is visible before animating
-        setTimeout(async () => {
-          await zoomToRegion("Amazon", 0.75);
-          // Stay zoomed for 2s, then zoom back out so user has full map
-          await sleep(2000);
-          await zoomToFull();
-        }, 300);
-      });
-    }, { threshold: 0.25 }).observe(ch4El);
   }
 
   // ── Kick everything off ────────────────────────────────────────────────────
   preloadAll().catch(console.error);
   initScrollamaSteps();
-  // initCh4Entry();
 
-  // Activate the first step on load (in case page starts at top)
   const firstStep = document.querySelector(".step");
   if (firstStep) firstStep.classList.add("is-active");
 });
