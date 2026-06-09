@@ -28,13 +28,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let activeScrollStep = null;
 
-  // PERF: cached canvas bounding rect — only recalculated on resize
-  let canvasRect = null;
+  // Canvas position changes while scrolling, so do not cache left/top.
+  // A stale bounding rect makes hover/click region hit-testing drift away from the cursor.
   function getCanvasRect() {
-    if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
-    return canvasRect;
+    return canvas.getBoundingClientRect();
   }
-  window.addEventListener("resize", () => { canvasRect = null; }, { passive: true });
 
   // PERF: RAF guard for mousemove-triggered redraws
   let rafPending = false;
@@ -749,20 +747,69 @@ window.addEventListener("DOMContentLoaded", () => {
     const yearlyData = buildYearlyData(selDataRect);
     const monthlyData = buildMonthlyData(selDataRect);
 
+    function decimalYear(date) {
+      const start = new Date(date.getFullYear(), 0, 1);
+      const next = new Date(date.getFullYear() + 1, 0, 1);
+      return date.getFullYear() + (date - start) / (next - start);
+    }
+
+    function normalCdf(x) {
+      // Abramowitz-Stegun erf approximation, enough for the stats label here.
+      const sign = x < 0 ? -1 : 1;
+      const z = Math.abs(x) / Math.sqrt(2);
+      const t = 1 / (1 + 0.3275911 * z);
+      const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
+      const erf = sign * (1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-z * z));
+      return 0.5 * (1 + erf);
+    }
+
+    function regressionStats(data) {
+      const points = data.map((d, i) => {
+        const y = d.value ?? d.mean;
+        let x = i;
+        if (d.year != null) x = +d.year;
+        else if (d.date instanceof Date) x = decimalYear(d.date);
+        return { x, y };
+      }).filter(d => Number.isFinite(d.x) && Number.isFinite(d.y));
+
+      if (points.length < 3) return null;
+
+      const n = points.length;
+      const xMean = d3.mean(points, d => d.x);
+      const yMean = d3.mean(points, d => d.y);
+      const sxx = d3.sum(points, d => (d.x - xMean) ** 2);
+      if (sxx === 0) return null;
+
+      const slope = d3.sum(points, d => (d.x - xMean) * (d.y - yMean)) / sxx;
+      const intercept = yMean - slope * xMean;
+      const sse = d3.sum(points, d => (d.y - (intercept + slope * d.x)) ** 2);
+      const df = n - 2;
+      const mse = sse / df;
+      const seSlope = Math.sqrt(mse / sxx);
+      const t = seSlope === 0 ? Infinity : slope / seSlope;
+
+      // Two-sided p-value using a normal approximation; with monthly data n is large,
+      // and with yearly data this is close enough for an exploratory UI label.
+      const pApprox = 2 * (1 - normalCdf(Math.abs(t)));
+      return { slope, t, pApprox, significant: pApprox < 0.05 };
+    }
+
     function renderStats(data) {
       const vals = data.map(d => d.value ?? d.mean).filter(v => v != null);
       if (!vals.length) { statsRow.innerHTML = ""; return; }
       const mn = d3.min(vals), mx = d3.max(vals), avg = d3.mean(vals);
-      const n = data.length;
-      const xs = data.map((_, i) => i);
-      const ys = data.map(d => d.value ?? d.mean);
-      const xMean = d3.mean(xs), yMean = d3.mean(ys);
-      const slope = d3.sum(xs.map((x, i) => (x - xMean) * (ys[i] - yMean))) /
-                    d3.sum(xs.map(x => (x - xMean) ** 2));
-      const trendDir = slope > 0.0001 ? "↑ Increasing" : slope < -0.0001 ? "↓ Decreasing" : "→ Stable";
+      const reg = regressionStats(data);
+      const slope = reg ? reg.slope : null;
+      const trendDir = !reg ? "—" : slope > 0.0001 ? "↑ Increasing" : slope < -0.0001 ? "↓ Decreasing" : "→ Stable";
+      const sigText = !reg ? "—" : reg.significant ? "Yes, p < 0.05" : "No, p ≥ 0.05";
       statsRow.innerHTML = [
-        ["Min", mn.toFixed(4)], ["Max", mx.toFixed(4)], ["Mean", avg.toFixed(4)],
-        ["Range", (mx - mn).toFixed(4)], ["Trend", trendDir],
+        ["Min", mn.toFixed(4)],
+        ["Max", mx.toFixed(4)],
+        ["Mean", avg.toFixed(4)],
+        ["Range", (mx - mn).toFixed(4)],
+        ["Slope", slope === null ? "—" : `${slope.toExponential(3)} NDVI/year`],
+        ["Significant?", sigText],
+        ["Trend", trendDir],
       ].map(([label, val]) => `
         <div>
           <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.15rem;">${label}</div>
@@ -904,7 +951,7 @@ window.addEventListener("DOMContentLoaded", () => {
       g.append("text").attr("transform", "rotate(-90)").attr("x", -iH / 2).attr("y", -40)
         .attr("text-anchor", "middle").style("font-family", "var(--mono)").style("font-size", "10px")
         .style("fill", "var(--ink-faint)").text("Mean NDVI (vegetation proxy)");
-      renderStats(monthlyData.map(d => ({ value: d.value })));
+      renderStats(monthlyData);
     }
 
     tabYearly.addEventListener("click", () => {
@@ -1118,9 +1165,9 @@ window.addEventListener("DOMContentLoaded", () => {
     "2-1": { graphicPanel: "panel-regional-trends",  label: "Regional NDVI trend slope · all regions positive" },
     "2-2": { graphicPanel: "panel-regional-trends",  label: "Regional NDVI trend slope · 4 significant, 2 uncertain" },
     "2-3": { graphicPanel: "panel-regional-trends",  label: "Regional NDVI trend slope · drivers of greening" },
+    "2-4": { graphicPanel: "panel-amazon-comp",      label: "Amazon vs Canada/Arctic · diverging trends 2000–2025" },
     "3-1": { graphicPanel: "panel-amazon-photo",     label: "Amazon basin · dense canopy snapshot" },
     "3-2": { graphicPanel: "panel-amazon-photo",     label: "Amazon basin · density vs. momentum" },
-    "3-3": { graphicPanel: "panel-amazon-comp",      label: "Amazon vs Canada/Arctic · diverging trends 2000–2025" },
   };
 
   function handleStepEnter({ element }) {

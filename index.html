@@ -658,8 +658,8 @@
     <span class="nav__brand">Drying Out · DSC 106</span>
     <ul class="nav__links">
       <li><a href="#section-1" data-chapter="0">Global Trend</a></li>
-      <li><a href="#section-2" data-chapter="1">The Greening</a></li>
-      <li><a href="#section-3" data-chapter="2">Amazon</a></li>
+      <li><a href="#section-2" data-chapter="1">Uneven Momentum</a></li>
+      <li><a href="#section-3" data-chapter="2">Stalled Amazon</a></li>
       <li><a href="#ch4" data-chapter="3">Explore</a></li>
     </ul>
   </nav>
@@ -667,8 +667,8 @@
   <!-- ══ CHAPTER DOTS ══ -->
   <nav id="chapter-dots" aria-label="Chapter navigation">
     <div class="dot active" data-target="section-1" title="Ch 01 · Global Trend"></div>
-    <div class="dot" data-target="section-2" title="Ch 02 · The Greening"></div>
-    <div class="dot" data-target="section-3" title="Ch 03 · Amazon"></div>
+    <div class="dot" data-target="section-2" title="Ch 02 · Uneven Momentum"></div>
+    <div class="dot" data-target="section-3" title="Ch 03 · Stalled Amazon"></div>
     <div class="dot" data-target="ch4" title="Ch 04 · Explore"></div>
   </nav>
 
@@ -676,11 +676,10 @@
   <header class="hero" id="hero">
     <div class="hero__kicker">An interactive atlas · 2000–2025 · DSC 106</div>
     <h1 class="hero__title">
-      Every Region Is Getting <em>Greener</em> — The Difference Is in the Trend.
+      The World Is Getting <em>Greener</em> — But Momentum Is Uneven.
     </h1>
     <p class="hero__lede">
-      Satellite data spanning 25 years shows every major region on Earth is getting greener — except the Amazon,
-      whose trend is so weak it barely registers. The world is healing. Earth's most vital forest is standing still.
+      Satellite data spanning 25 years shows a broad greening signal across the Americas. But the trend is not equally strong everywhere. The Amazon remains one of the greenest places on Earth — yet compared with faster-greening regions, its long-term momentum is weak.
     </p>
     <div class="hero__byline">
       <span>Shaun Israni</span>
@@ -765,6 +764,15 @@
             style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px;"
             onerror="this.style.display='none'" />
         </div>
+
+        <!-- Panel B: Amazon vs Canada comparison chart -->
+        <div class="graphic-panel" id="panel-amazon-comp"
+          style="padding:1.5rem; align-items:center; justify-content:center;">
+          <img src="amazon_canada_comp.png" alt="NDVI trend comparison: Amazon vs Canada/Arctic"
+            style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px;"
+            onerror="this.style.display='none'" />
+        </div>
+
       </div>
     </div>
 
@@ -774,23 +782,23 @@
         <div class="step__num">Chapter 02 · Step 1</div>
         <h2 class="step__title">Every region is getting <em>greener.</em></h2>
         <p class="step__body">
-          When we fit a linear trend across all 300 months of NDVI data for
-          each region, every single one shows a positive slope. The planet's
-          vegetation — taken as a whole — is increasing. That story is
-          <em>unambiguous.</em>
+          When we fit a linear trend across the full monthly NDVI record for
+          each region, every region shows a positive slope. At the broadest
+          level, the story is greening: vegetation is increasing, growing seasons
+          are lengthening, and plant cover is gaining ground.
         </p>
         <span class="tag tag--green">All slopes positive</span>
       </div>
 
       <div class="step" data-step="2-2" data-section="2">
         <div class="step__num">Chapter 02 · Step 2</div>
-        <h2 class="step__title">Four regions clear the significance bar. Two don't.</h2>
+        <h2 class="step__title">But positive does not always mean convincing.</h2>
         <p class="step__body">
-          Statistical significance (p&nbsp;&lt;&nbsp;0.05) separates confident
-          trends from noise. Canada/Arctic, the Andes, Central America, and
-          the Midwest all clear this threshold. The Western US and the Amazon
-          have positive slopes on paper — but neither is statistically
-          confirmed.
+          Statistical significance (p&nbsp;&lt;&nbsp;0.05) separates strong trends
+          from patterns that may still be noise. Canada/Arctic, the Andes,
+          Central America, and the Midwest clear this threshold. The Western US
+          and the Amazon also slope upward, but their increases are not strong
+          enough to be statistically confirmed.
         </p>
         <span class="tag tag--green">4 significant</span>
         <span class="tag tag--amber">2 uncertain</span>
@@ -798,20 +806,35 @@
 
       <div class="step" data-step="2-3" data-section="2">
         <div class="step__num">Chapter 02 · Step 3</div>
-        <h2 class="step__title">CO₂ fertilization, longer seasons, land-use change.</h2>
+        <h2 class="step__title">The same direction can hide very different speeds.</h2>
         <p class="step__body">
-          Rising CO₂ boosts photosynthesis in most plants. Higher Arctic
-          temperatures extend growing seasons by weeks per decade. Agricultural
-          intensification in the Midwest turns more bare soil to crop canopy.
-          These forces compound — which is why the greening signal is so
-          consistent across regions.
+          Some regions are greening quickly, helped by longer growing seasons,
+          agricultural intensification, or vegetation expanding into previously
+          colder landscapes. Others move only slightly upward. That means the
+          important question is no longer just whether NDVI is increasing — it is
+          how strongly, and with how much confidence.
         </p>
         <div class="callout">
-          The Western US and the Amazon are the exceptions — both stressed
-          ecosystems where heat stress, drought, and deforestation push back
-          against the global tide.
+          The story shifts from simple greening to uneven momentum: some regions
+          are gaining vegetation rapidly, while others are barely moving.
         </div>
       </div>
+
+      <div class="step" data-step="2-4" data-section="2" data-graphic="panel-amazon-comp">
+        <div class="step__num">Chapter 02 · Step 4</div>
+        <h2 class="step__title">Canada's slope is 4.6× steeper than the Amazon's.</h2>
+        <p class="step__body">
+          Indexed to 2000, Canada/Arctic's NDVI climbs clearly over the record.
+          The Amazon's line, by comparison, is nearly flat. Both regions may be
+          green, but their momentum is not the same.
+        </p>
+        <div class="callout red">
+          The Amazon is not visibly barren. It is still deeply green. The concern
+          is subtler: its increase is so weak that it fails to reach statistical
+          significance.
+        </div>
+      </div>
+
 
     </div>
   </section>
@@ -819,8 +842,9 @@
   <!-- ══ PIVOT ══ -->
   <div class="pivot" id="pivot">
     <p class="pivot__heading">
-      Every region is greening.<br />
-      And yet the Amazon — <em>Earth's lungs</em> — barely moves.
+      Every region is getting greener.<br />
+      But the Amazon, one of the greenest places on Earth, is <em>barely gaining ground.</em><br />
+      The story is not vegetation loss. It is stalled momentum.
     </p>
   </div>
 
@@ -840,14 +864,6 @@
             style="max-width:100%; max-height:72%; object-fit:contain; display:block; border-radius:4px;" />
         </div>
 
-        <!-- Panel B: Amazon vs Canada comparison chart -->
-        <div class="graphic-panel" id="panel-amazon-comp"
-          style="padding:1.5rem; align-items:center; justify-content:center;">
-          <img src="amazon_canada_comp.png" alt="NDVI trend comparison: Amazon vs Canada/Arctic"
-            style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px;"
-            onerror="this.style.display='none'" />
-        </div>
-
       </div>
     </div>
 
@@ -855,41 +871,27 @@
 
       <div class="step" data-step="3-1" data-section="3" data-graphic="panel-amazon-photo">
         <div class="step__num">Chapter 03 · Step 1</div>
-        <h2 class="step__title">A forest can look healthy. The trend can tell a different story.</h2>
+        <h2 class="step__title">A dense forest can still have a weak trend.</h2>
         <p class="step__body">
-          NDVI snapshots show the Amazon as one of the greenest places on Earth —
-          dense, dark canopy year-round. But a snapshot hides momentum.
-          When we look at the rate of change, the picture shifts.
+          NDVI snapshots show the Amazon as one of the greenest places on Earth:
+          dense, dark, and green year-round. But high baseline vegetation can
+          hide whether the forest is actually gaining strength over time.
         </p>
-        <span class="tag tag--amber">Amazon basin · slow growth</span>
+        <span class="tag tag--amber">Amazon basin · weak momentum</span>
       </div>
 
       <div class="step" data-step="3-2" data-section="3" data-graphic="panel-amazon-photo">
         <div class="step__num">Chapter 03 · Step 2</div>
-        <h2 class="step__title">High density can mask weak momentum.</h2>
+        <h2 class="step__title">High NDVI is not the same as resilience.</h2>
         <p class="step__body">
-          The Amazon scores high on NDVI because it has been a forest for
-          millennia — that baseline is baked in. What the satellite can't show
-          in a single frame is whether that canopy is thickening, thinning,
-          or simply holding on.
+          The Amazon's greenness is partly a baseline: it begins the record as a
+          dense tropical forest. The slope asks a different question — not how
+          green it is today, but whether it is becoming greener, holding steady,
+          or falling behind the pace of change elsewhere.
         </p>
         <div class="callout amber">
-          The slope — not the snapshot — is what reveals long-term resilience.
-        </div>
-      </div>
-
-      <div class="step" data-step="3-3" data-section="3" data-graphic="panel-amazon-comp">
-        <div class="step__num">Chapter 03 · Step 3</div>
-        <h2 class="step__title">Canada's slope is 4.6× steeper than the Amazon's.</h2>
-        <p class="step__body">
-          Indexed to 2000, Canada/Arctic's NDVI has climbed steeply over 25
-          years. The Amazon's line is nearly flat. That divergence — and the
-          fact it widens every year — is the central finding of this dataset.
-        </p>
-        <div class="callout red">
-          The Amazon's trend is so weak it fails to reach statistical
-          significance. For the world's most important carbon sink, "barely
-          growing" is not reassuring.
+          The snapshot shows density. The slope reveals momentum. In the Amazon,
+          that momentum is weak.
         </div>
       </div>
 
@@ -903,12 +905,13 @@
 
     <div class="ch4-header">
       <div class="chapter__num">Chapter 04</div>
-      <h2>Explore the change — interactively.</h2>
+      <h2>Explore the momentum — interactively.</h2>
       <p>
         Scrub through the 25-year NDVI record, zoom into any region, and compare
         two months side by side. Hover any pixel to reveal its local vegetation
-        proxy. Click a region box to trigger a guided timeline animation.
-        The Amazon's stagnation becomes even clearer when you explore it directly.
+        proxy, or highlight a custom region to view its trend, slope, and
+        statistical significance. The Amazon's stalled momentum becomes clearer
+        when you compare it directly against faster-greening regions.
       </p>
     </div>
 
