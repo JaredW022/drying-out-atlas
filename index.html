@@ -9,6 +9,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap"
     rel="stylesheet" />
+  <link rel="stylesheet" href="./css/homepage-interactives.css" />
 
   <style>
     *,
@@ -661,6 +662,7 @@
       <li><a href="#section-2" data-chapter="1">Uneven Momentum</a></li>
       <li><a href="#section-3" data-chapter="2">Stalled Amazon</a></li>
       <li><a href="#ch4" data-chapter="3">Explore</a></li>
+      <li><a href="./game.html">Game</a></li>
     </ul>
   </nav>
 
@@ -760,9 +762,8 @@
       <div class="scroll-graphic__inner">
         <div class="graphic-panel visible" id="panel-regional-trends"
           style="padding:1.5rem; align-items:center; justify-content:center;">
-          <img src="regional_vegetation_trend_slope.png" alt="Bar chart of NDVI trend slopes by region"
-            style="max-width:100%; max-height:100%; object-fit:contain; border-radius:4px;"
-            onerror="this.style.display='none'" />
+          <div class="homepage-interactive" id="interactive-regional-trends"
+            aria-label="Interactive regional vegetation trend slope chart"></div>
         </div>
 
         <!-- Panel B: Amazon vs Canada comparison chart -->
