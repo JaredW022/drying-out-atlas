@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 500">
+  <rect width="860" height="500" fill="#faf7f0"/>
+  <text x="42" y="50" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#1f1a14">Amazon: annual vegetation proxy</text>
+  <text x="42" y="78" font-family="monospace" font-size="13" fill="#8a7e6e" letter-spacing="1.2">REAL DATA · monthly NDVI proxy averaged by year</text>
+  
+  <g><line x1="76" y1="112.0" x2="824" y2="112.0" stroke="#e6dccb"/><line x1="76" y1="191.0" x2="824" y2="191.0" stroke="#e6dccb"/><line x1="76" y1="270.0" x2="824" y2="270.0" stroke="#e6dccb"/><line x1="76" y1="349.0" x2="824" y2="349.0" stroke="#e6dccb"/><line x1="76" y1="428.0" x2="824" y2="428.0" stroke="#e6dccb"/></g>
+  <line x1="76" y1="428" x2="824" y2="428" stroke="#1f1a14" opacity="0.45"/>
+  <line x1="76" y1="112" x2="76" y2="428" stroke="#1f1a14" opacity="0.45"/>
+  <polyline points="76.0,142.6 110.0,162.7 144.0,168.5 178.0,149.9 212.0,197.5 246.0,200.3 280.0,194.1 314.0,196.2 348.0,216.4 382.0,219.9 416.0,217.1 450.0,234.3 484.0,227.4 518.0,234.5 552.0,353.7 586.0,397.4 620.0,269.5 654.0,273.7 688.0,284.8 722.0,282.1 756.0,296.5 790.0,307.1 824.0,275.0" fill="none" stroke="#a8501f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="76.0" cy="142.6" r="4" fill="#4a7a2a"/><circle cx="110.0" cy="162.7" r="4" fill="#4a7a2a"/><circle cx="144.0" cy="168.5" r="4" fill="#4a7a2a"/><circle cx="178.0" cy="149.9" r="4" fill="#4a7a2a"/><circle cx="212.0" cy="197.5" r="4" fill="#4a7a2a"/><circle cx="246.0" cy="200.3" r="4" fill="#4a7a2a"/><circle cx="280.0" cy="194.1" r="4" fill="#4a7a2a"/><circle cx="314.0" cy="196.2" r="4" fill="#4a7a2a"/><circle cx="348.0" cy="216.4" r="4" fill="#4a7a2a"/><circle cx="382.0" cy="219.9" r="4" fill="#4a7a2a"/><circle cx="416.0" cy="217.1" r="4" fill="#4a7a2a"/><circle cx="450.0" cy="234.3" r="4" fill="#4a7a2a"/><circle cx="484.0" cy="227.4" r="4" fill="#4a7a2a"/><circle cx="518.0" cy="234.5" r="4" fill="#4a7a2a"/><circle cx="552.0" cy="353.7" r="4" fill="#4a7a2a"/><circle cx="586.0" cy="397.4" r="4" fill="#4a7a2a"/><circle cx="620.0" cy="269.5" r="4" fill="#4a7a2a"/><circle cx="654.0" cy="273.7" r="4" fill="#4a7a2a"/><circle cx="688.0" cy="284.8" r="4" fill="#4a7a2a"/><circle cx="722.0" cy="282.1" r="4" fill="#4a7a2a"/><circle cx="756.0" cy="296.5" r="4" fill="#4a7a2a"/><circle cx="790.0" cy="307.1" r="4" fill="#4a7a2a"/><circle cx="824.0" cy="275.0" r="4" fill="#4a7a2a"/>
+  <text x="76" y="468" font-family="monospace" font-size="13" fill="#8a7e6e">2001</text>
+  <text x="788" y="468" font-family="monospace" font-size="13" fill="#8a7e6e">2023</text>
+  <text x="76" y="94" font-family="monospace" font-size="13" fill="#8a7e6e">Annual mean NDVI proxy</text>
+  <rect x="42" y="405" width="520" height="48" rx="6" fill="#fffaf0" stroke="#e6dccb"/>
+  <text x="58" y="435" font-family="monospace" font-size="14" fill="#1f1a14">2001: 0.762 → 2023: 0.735 (-0.027)</text>
+
+</svg>

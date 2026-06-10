@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 500">
+  <rect width="860" height="500" fill="#faf7f0"/>
+  <text x="42" y="50" font-family="Georgia, serif" font-size="28" font-weight="700" fill="#1f1a14">Canada/Arctic: tree cover trend</text>
+  <text x="42" y="78" font-family="monospace" font-size="13" fill="#8a7e6e" letter-spacing="1.2">REAL DATA · MODIS VCF-derived tree cover summary</text>
+  
+  <g><line x1="76" y1="112.0" x2="824" y2="112.0" stroke="#e6dccb"/><line x1="76" y1="191.0" x2="824" y2="191.0" stroke="#e6dccb"/><line x1="76" y1="270.0" x2="824" y2="270.0" stroke="#e6dccb"/><line x1="76" y1="349.0" x2="824" y2="349.0" stroke="#e6dccb"/><line x1="76" y1="428.0" x2="824" y2="428.0" stroke="#e6dccb"/></g>
+  <line x1="76" y1="428" x2="824" y2="428" stroke="#1f1a14" opacity="0.45"/>
+  <line x1="76" y1="112" x2="76" y2="428" stroke="#1f1a14" opacity="0.45"/>
+  <polyline points="76.0,142.6 110.0,266.9 144.0,235.8 178.0,248.2 212.0,260.7 246.0,198.5 280.0,353.9 314.0,291.8 348.0,291.8 382.0,279.3 416.0,217.2 450.0,335.3 484.0,316.6 518.0,372.6 552.0,347.7 586.0,353.9 620.0,260.7 654.0,372.6 688.0,322.8 722.0,360.1 756.0,291.8 790.0,397.4 824.0,353.9" fill="none" stroke="#a8501f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="76.0" cy="142.6" r="4" fill="#4a7a2a"/><circle cx="110.0" cy="266.9" r="4" fill="#4a7a2a"/><circle cx="144.0" cy="235.8" r="4" fill="#4a7a2a"/><circle cx="178.0" cy="248.2" r="4" fill="#4a7a2a"/><circle cx="212.0" cy="260.7" r="4" fill="#4a7a2a"/><circle cx="246.0" cy="198.5" r="4" fill="#4a7a2a"/><circle cx="280.0" cy="353.9" r="4" fill="#4a7a2a"/><circle cx="314.0" cy="291.8" r="4" fill="#4a7a2a"/><circle cx="348.0" cy="291.8" r="4" fill="#4a7a2a"/><circle cx="382.0" cy="279.3" r="4" fill="#4a7a2a"/><circle cx="416.0" cy="217.2" r="4" fill="#4a7a2a"/><circle cx="450.0" cy="335.3" r="4" fill="#4a7a2a"/><circle cx="484.0" cy="316.6" r="4" fill="#4a7a2a"/><circle cx="518.0" cy="372.6" r="4" fill="#4a7a2a"/><circle cx="552.0" cy="347.7" r="4" fill="#4a7a2a"/><circle cx="586.0" cy="353.9" r="4" fill="#4a7a2a"/><circle cx="620.0" cy="260.7" r="4" fill="#4a7a2a"/><circle cx="654.0" cy="372.6" r="4" fill="#4a7a2a"/><circle cx="688.0" cy="322.8" r="4" fill="#4a7a2a"/><circle cx="722.0" cy="360.1" r="4" fill="#4a7a2a"/><circle cx="756.0" cy="291.8" r="4" fill="#4a7a2a"/><circle cx="790.0" cy="397.4" r="4" fill="#4a7a2a"/><circle cx="824.0" cy="353.9" r="4" fill="#4a7a2a"/>
+  <text x="76" y="468" font-family="monospace" font-size="13" fill="#8a7e6e">2001</text>
+  <text x="788" y="468" font-family="monospace" font-size="13" fill="#8a7e6e">2023</text>
+  <text x="76" y="94" font-family="monospace" font-size="13" fill="#8a7e6e">Tree cover (%)</text>
+  <rect x="42" y="405" width="520" height="48" rx="6" fill="#fffaf0" stroke="#e6dccb"/>
+  <text x="58" y="435" font-family="monospace" font-size="14" fill="#1f1a14">2001: 46.300 → 2023: 42.900 (-3.400)</text>
+
+</svg>

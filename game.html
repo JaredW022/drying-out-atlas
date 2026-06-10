@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drying Out Road Trip · Drying Out</title>
+  <link rel="stylesheet" href="./css/roadtrip-game.css?v=8" />
+</head>
+
+<body>
+  <nav class="nav">
+    <span class="nav__brand">Drying Out · DSC 106</span>
+    <ul class="nav__links">
+      <li><a href="./index.html#section-1">Global Trend</a></li>
+      <li><a href="./index.html#section-2">Uneven Momentum</a></li>
+      <li><a href="./index.html#section-3">Stalled Amazon</a></li>
+      <li><a href="./index.html#ch4">Explore</a></li>
+      <li><a class="active" aria-current="page" href="./game.html">Game</a></li>
+    </ul>
+  </nav>
+
+  <main class="game-shell">
+    <section class="game-intro" aria-labelledby="game-title">
+      <p class="eyebrow">Demo mode · road trip</p>
+      <h1 id="game-title">Drive the Americas, stop by stop.</h1>
+      <p>
+        The car moves across a map of the Americas. At each region, guess the main pressure behind
+        the change, then reveal the answer with a real-world image and data note.
+      </p>
+    </section>
+
+    <section class="game-board" aria-live="polite">
+      <div class="visual-panel" id="visual-panel">
+        <div class="panel-bar">
+          <span id="stop-count">Stop 1 / 5</span>
+          <span id="mode-label">Map route</span>
+        </div>
+
+        <div class="map-view" id="map-view" aria-label="Map of the Americas with road trip car">
+          <div class="map-label">
+            <span id="region-label">Canada/Arctic</span>
+          </div>
+          <svg class="route-map" id="route-map" role="img" aria-label="Choropleth map of the Americas road trip route"></svg>
+          <div
+            class="jeep-indicator"
+            id="car-indicator"
+            aria-hidden="true"
+            style="font-size:52px; line-height:1; background:transparent; box-shadow:none; border:none; filter:drop-shadow(1px 1px 2px rgba(0,0,0,0.3));">🚙</div>
+        </div>
+
+        <div class="reveal-view" id="reveal-view" hidden>
+          <img class="photo photo--main" id="photo-main" alt="" />
+        </div>
+      </div>
+
+      <aside class="control-panel">
+        <div class="score-row">
+          <span>Correct</span>
+          <strong id="score">0</strong>
+        </div>
+
+        <div class="prompt-card">
+          <p class="prompt-kicker" id="prompt-kicker">Question</p>
+          <h2 id="prompt-title">What is driving change here?</h2>
+          <p id="prompt-copy">Pick the most likely pressure before the real-world reveal.</p>
+          <div class="choice-grid" id="choice-grid"></div>
+        </div>
+
+        <div class="result-card" id="result-card" hidden>
+          <p class="result-label" id="result-label">Answer</p>
+          <h3 id="result-title"></h3>
+          <p id="result-copy"></p>
+          <div class="trend-wrap">
+            <svg id="trend-chart" viewBox="0 0 300 160" role="img" aria-label="Regional tree cover trend chart"></svg>
+            <p class="chart-caption" id="chart-caption"></p>
+            <p class="chart-source" id="chart-source"></p>
+          </div>
+          <button class="next-btn" id="next-btn">Back to map</button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+  <script type="module" src="./js/roadtrip-game.js?v=7"></script>
+</body>
+
+</html>
